@@ -1,0 +1,16 @@
+# 敏感配置
+.env
+.idea/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 运行时生成数据
+data/conversations/
+data/scraping_log.jsonl
+data/usage_stats.json
+data/notifications.json
+data/pending_review.json
+data/reminders.json
+data/user_preferences.json
