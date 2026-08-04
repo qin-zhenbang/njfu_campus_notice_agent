@@ -13,9 +13,9 @@ from typing import Any
 
 from .config import EVENT_FEED_PAGES, EVENT_FEED_TIMEOUT, EVENT_FEED_URL, FEED_FILE, PENDING_FILE, SCRAPE_LOG_FILE
 from .event_store import EventStore
-from .models import Event
+from .models import Event, minutes_between
 from .njfu_feed import SchoolFeedParseError, extract_school_items
-from .time_parser import parse_datetime
+from .time_parser import parse_datetime, parse_duration
 
 
 logger = logging.getLogger(__name__)
@@ -235,12 +235,29 @@ class EventScraper:
             source=str(item.get("source", source or "校园网")),
             source_url=str(item.get("source_url", "")),
             tags=[str(tag) for tag in item.get("tags", [])],
-            end_time=str(item.get("end_time", "")),
+            duration_minutes=self._candidate_duration(item, time_value),
             contact=str(item.get("contact", "")),
         )
         if self.store.get(event.id):
             return event, "duplicate"
         return event, "ok"
+
+    # 从候选记录解析持续时长：优先 duration 文本，其次 duration_minutes，最后按 end_time 换算。
+    def _candidate_duration(self, item: dict[str, Any], start_time: str) -> int:
+        raw = item.get("duration")
+        if raw not in (None, ""):
+            parsed = parse_duration(str(raw))
+            if parsed is not None:
+                return parsed
+        raw_minutes = item.get("duration_minutes")
+        if raw_minutes not in (None, ""):
+            try:
+                return max(0, int(raw_minutes))
+            except (TypeError, ValueError):
+                pass
+        if item.get("end_time"):
+            return minutes_between(start_time, str(item.get("end_time")))
+        return 0
 
     # 加载待审核队列。
     def _load_pending(self) -> list[dict[str, Any]]:

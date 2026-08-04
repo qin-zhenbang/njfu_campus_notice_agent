@@ -3,7 +3,7 @@
 import unittest
 from datetime import date
 
-from src.time_parser import parse_datetime, parse_time_range
+from src.time_parser import parse_datetime, parse_duration, parse_time_range
 
 
 BASE = date(2026, 9, 7)
@@ -65,6 +65,25 @@ class TimeParserTests(unittest.TestCase):
         parsed = parse_time_range("下个月", base=BASE)
         self.assertEqual(parsed.start.isoformat(), "2026-10-01T00:00:00")
         self.assertEqual(parsed.end.isoformat(), "2026-10-31T23:59:59.999999")
+
+
+    def test_parse_duration_variants(self):
+        cases = {
+            "90": 90,
+            "90分钟": 90,
+            "1.5小时": 90,
+            "2小时30分钟": 150,
+            "1h30m": 90,
+            "90m": 90,
+            "2 小时": 120,
+            "1小时": 60,
+        }
+        for text, expected in cases.items():
+            self.assertEqual(parse_duration(text), expected, text)
+
+    def test_parse_duration_invalid(self):
+        for text in ["", "  ", "乱写的", "-30", "0", "abc", None]:
+            self.assertIsNone(parse_duration(text), repr(text))
 
 
 if __name__ == "__main__":

@@ -92,6 +92,18 @@ class InterestMatcherTests(unittest.TestCase):
         self.assertNotIn("threshold", status)
 
 
+    def test_remove_by_event(self):
+        self.matcher.set_preferences(["讲座"])
+        self.matcher.evaluate_event(self.event)
+        self.assertEqual(len(self.matcher.notifications_for()), 1)
+
+        removed = self.matcher.remove_by_event("EVT-TEST")
+
+        self.assertEqual(removed, 1)
+        self.assertEqual(self.matcher.notifications_for(), [])
+        self.assertEqual(self.matcher.remove_by_event("EVT-TEST"), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
 

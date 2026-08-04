@@ -58,7 +58,10 @@
         <div class="events-panel">
           <div class="panel-head">
             <h2>统一活动列表</h2>
-            <span id="result-count" class="muted"></span>
+            <div class="panel-head-actions">
+              <span id="result-count" class="muted"></span>
+              <button id="add-event-button" type="button">+ 手动添加</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
@@ -70,6 +73,7 @@
                   <th>地点</th>
                   <th>类别</th>
                   <th>来源</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody id="events-body"></tbody>
@@ -134,6 +138,54 @@
         </aside>
       </section>
     </main>
+
+    <!-- 新增/编辑活动弹窗：新增和编辑共用同一表单。 -->
+    <div id="event-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-dialog">
+        <h2 id="event-modal-title">新增活动</h2>
+        <form id="event-form">
+          <input id="event-id" type="hidden" />
+          <label>
+            <span>名称（必填）</span>
+            <input id="event-name" type="text" required />
+          </label>
+          <label>
+            <span>类别（可自定义）</span>
+            <input id="event-category" type="text" list="event-category-options" placeholder="选择或输入自定义类别" />
+          </label>
+          <datalist id="event-category-options"></datalist>
+          <label>
+            <span>开始时间（必填）</span>
+            <input id="event-time" type="datetime-local" required />
+          </label>
+          <label>
+            <span>持续时间（可选）</span>
+            <input id="event-duration" type="text" placeholder="如 90 分钟 / 1.5 小时" />
+          </label>
+          <label>
+            <span>地点（必填）</span>
+            <input id="event-location" type="text" required />
+          </label>
+          <label>
+            <span>描述</span>
+            <textarea id="event-description" rows="3"></textarea>
+          </label>
+          <label>
+            <span>标签（逗号分隔）</span>
+            <input id="event-tags" type="text" placeholder="讲座, AI" />
+          </label>
+          <label>
+            <span>联系人</span>
+            <input id="event-contact" type="text" />
+          </label>
+          <div class="modal-actions">
+            <button type="button" id="event-cancel" class="secondary" data-close-modal>取消</button>
+            <button type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- 页面交互逻辑。 -->
     <script src="/app.js"></script>

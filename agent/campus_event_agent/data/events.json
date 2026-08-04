@@ -14,7 +14,7 @@
       "开学",
       "教务"
     ],
-    "end_time": "2026-08-31T11:00:00",
+    "duration_minutes": 120,
     "contact": "校办"
   },
   {
@@ -32,7 +32,7 @@
       "四级",
       "讲座"
     ],
-    "end_time": "2026-09-09T20:00:00",
+    "duration_minutes": 90,
     "contact": "外国语学院"
   },
   {
@@ -50,7 +50,7 @@
       "算法",
       "竞赛"
     ],
-    "end_time": "2026-09-11T20:30:00",
+    "duration_minutes": 90,
     "contact": "计算机学院"
   },
   {
@@ -68,7 +68,7 @@
       "招新",
       "报名"
     ],
-    "end_time": "2026-09-19T16:00:00",
+    "duration_minutes": 420,
     "contact": "校团委"
   },
   {
@@ -86,7 +86,7 @@
       "培训",
       "新生"
     ],
-    "end_time": "2026-09-16T15:30:00",
+    "duration_minutes": 60,
     "contact": "图书馆"
   },
   {
@@ -104,7 +104,7 @@
       "马拉松",
       "报名"
     ],
-    "end_time": "2026-09-20T12:00:00",
+    "duration_minutes": 120,
     "contact": "体育部"
   },
   {
@@ -122,7 +122,7 @@
       "竞赛",
       "培训"
     ],
-    "end_time": "2026-09-24T21:00:00",
+    "duration_minutes": 90,
     "contact": "数学学院"
   },
   {
@@ -140,7 +140,7 @@
       "招生",
       "讲座"
     ],
-    "end_time": "2026-09-25T16:30:00",
+    "duration_minutes": 90,
     "contact": "研究生院"
   },
   {
@@ -158,7 +158,7 @@
       "创业",
       "申报"
     ],
-    "end_time": "2026-09-29T15:30:00",
+    "duration_minutes": 90,
     "contact": "创新创业学院"
   },
   {
@@ -176,7 +176,7 @@
       "歌手",
       "海选"
     ],
-    "end_time": "2026-10-10T21:00:00",
+    "duration_minutes": 150,
     "contact": "校学生会"
   },
   {
@@ -194,7 +194,7 @@
       "公益",
       "培训"
     ],
-    "end_time": "2026-10-07T17:30:00",
+    "duration_minutes": 90,
     "contact": "青年志愿者协会"
   },
   {
@@ -212,7 +212,7 @@
       "校友",
       "讲座"
     ],
-    "end_time": "2026-10-15T20:30:00",
+    "duration_minutes": 90,
     "contact": "校友会"
   },
   {
@@ -230,7 +230,7 @@
       "文化节",
       "展示"
     ],
-    "end_time": "2026-10-17T17:00:00",
+    "duration_minutes": 420,
     "contact": "校团委"
   },
   {
@@ -248,7 +248,7 @@
       "报名",
       "计算机"
     ],
-    "end_time": "2026-10-12T17:00:00",
+    "duration_minutes": 480,
     "contact": "教务处"
   },
   {
@@ -266,7 +266,7 @@
       "竞赛",
       "答题"
     ],
-    "end_time": "2026-10-22T20:00:00",
+    "duration_minutes": 90,
     "contact": "信息化中心"
   },
   {
@@ -284,7 +284,7 @@
       "演讲",
       "竞赛"
     ],
-    "end_time": "2026-11-05T17:00:00",
+    "duration_minutes": 180,
     "contact": "外国语学院"
   },
   {
@@ -302,7 +302,7 @@
       "压力",
       "讲座"
     ],
-    "end_time": "2026-11-08T20:30:00",
+    "duration_minutes": 90,
     "contact": "心理健康教育中心"
   },
   {
@@ -320,7 +320,7 @@
       "市集",
       "环保"
     ],
-    "end_time": "2026-11-14T15:30:00",
+    "duration_minutes": 360,
     "contact": "学生社区"
   },
   {
@@ -338,7 +338,7 @@
       "文献",
       "讲座"
     ],
-    "end_time": "2026-11-11T16:30:00",
+    "duration_minutes": 90,
     "contact": "图书馆"
   },
   {
@@ -356,7 +356,7 @@
       "寒假",
       "申报"
     ],
-    "end_time": "2026-11-18T17:30:00",
+    "duration_minutes": 60,
     "contact": "校团委"
   },
   {
@@ -374,7 +374,7 @@
       "竞赛",
       "就业"
     ],
-    "end_time": "2026-11-28T12:00:00",
+    "duration_minutes": 180,
     "contact": "就业指导中心"
   },
   {
@@ -392,7 +392,7 @@
       "展览",
       "文化"
     ],
-    "end_time": "2026-12-04T18:00:00",
+    "duration_minutes": 360,
     "contact": "校摄影协会"
   },
   {
@@ -410,7 +410,7 @@
       "复习",
       "讲座"
     ],
-    "end_time": "2026-12-15T20:00:00",
+    "duration_minutes": 90,
     "contact": "学习支持中心"
   },
   {
@@ -428,7 +428,7 @@
       "教务",
       "答疑"
     ],
-    "end_time": "2026-12-23T12:00:00",
+    "duration_minutes": 120,
     "contact": "教务处"
   },
   {
@@ -446,7 +446,7 @@
       "公益",
       "开放日"
     ],
-    "end_time": "2026-11-15T15:00:00",
+    "duration_minutes": 360,
     "contact": "青年志愿者协会"
   },
   {
@@ -463,7 +463,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -480,7 +480,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -497,7 +497,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -514,7 +514,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -531,7 +531,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -548,7 +548,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -565,7 +565,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -582,7 +582,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -599,7 +599,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -616,7 +616,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -633,7 +633,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -650,24 +650,7 @@
       "校网",
       "文体活动"
     ],
-    "end_time": "",
-    "contact": ""
-  },
-  {
-    "id": "NJFU-358301",
-    "name": "Emulating Terpene Biosynthesis in the Synthesis of Complex Polycyclic Natural Products",
-    "category": "讲座",
-    "raw_time": "2026年5月22日10:00",
-    "time": "2026-05-22T10:00:00",
-    "location": "化工院2400",
-    "description": "【报告人】Phillip Andrew Evans 教授 【报告时间】2026年5月22日10:00 【报告地点】化工院2400",
-    "source": "南京林业大学校网",
-    "source_url": "http://www.njfu.edu.cn/xsdt/20260521/i358301.html",
-    "tags": [
-      "校网",
-      "讲座"
-    ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   },
   {
@@ -684,7 +667,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 10,
     "contact": ""
   },
   {
@@ -701,7 +684,7 @@
       "校网",
       "讲座"
     ],
-    "end_time": "",
+    "duration_minutes": 0,
     "contact": ""
   }
 ]

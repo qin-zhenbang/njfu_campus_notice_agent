@@ -198,6 +198,43 @@ class AgentHandler(BaseHTTPRequestHandler):
             self.app.matcher.mark_read(event_id)
             self._send_json({"ok": True})
             return
+        # 手动新增活动：ID 可省略，成功后返回 201 并触发兴趣推送。
+        if path == "/api/events":
+            ok, result = self.app.store.create_event(body)
+            if not ok:
+                self._send_json({"error": result}, status=400)
+                return
+            event = result
+            pushed = self.app.interest_agent.evaluate_event(event, source="manual-add")
+            self._send_json({"event": event.to_dict(), "pushed": pushed}, status=201)
+            return
+        # 修改活动：按 ID 更新字段，找不到返回 404。
+        if path == "/api/events/update":
+            event_id = str(body.get("id", "")).strip()
+            if not event_id:
+                self._send_json({"error": "缺少活动 ID"}, status=400)
+                return
+            fields = {key: value for key, value in body.items() if key != "id"}
+            ok, message = self.app.store.update_event(event_id, fields)
+            if not ok:
+                self._send_json({"error": message}, status=404 if message == "活动不存在" else 400)
+                return
+            self._send_json({"ok": True})
+            return
+        # 删除活动：级联取消相关提醒并移除兴趣通知，找不到返回 404。
+        if path == "/api/events/delete":
+            event_id = str(body.get("id", "")).strip()
+            if not event_id:
+                self._send_json({"error": "缺少活动 ID"}, status=400)
+                return
+            if self.app.store.get(event_id) is None:
+                self._send_json({"error": "活动不存在"}, status=404)
+                return
+            cancelled = self.app.reminders.cancel_by_event(event_id)
+            removed = self.app.matcher.remove_by_event(event_id)
+            ok, _ = self.app.store.delete_event(event_id)
+            self._send_json({"ok": ok, "cancelled_reminders": cancelled, "removed_notifications": removed})
+            return
         self._send_json({"error": "接口不存在"}, status=404)
 
     # 服务前端静态文件，并防止路径穿越。

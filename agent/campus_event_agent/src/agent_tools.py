@@ -166,6 +166,55 @@ def build_campus_tools(
             f"总耗时：{stats.get('total_duration_ms', 0)}ms"
         )
 
+    @tool("add_event")
+    def add_event(
+        name: str,
+        time: str,
+        location: str,
+        category: str = "其他",
+        description: str = "",
+        tags: str = "",
+        duration: str = "",
+        contact: str = "",
+    ) -> str:
+        """Manually add a campus event record (name, time, location required).
+
+        Use this to record an activity the user knows about that is missing
+        from the library. The event id is generated automatically. The optional
+        duration accepts values like "90 分钟", "1.5 小时" or "2小时30分钟".
+        """
+        ok, result = store.create_event(
+            {
+                "name": name,
+                "time": time,
+                "location": location,
+                "category": category or "其他",
+                "description": description,
+                "tags": tags,
+                "duration": duration,
+                "contact": contact,
+                "source": "Agent 手动录入",
+            }
+        )
+        track("tool.add_event", f"name={name}")
+        if not ok:
+            return f"新增失败：{result}"
+        return f"已新增活动：{result.name}（ID {result.id}，时间 {result.time}）"
+
+    @tool("update_event")
+    def update_event(id: str, fields: dict[str, Any]) -> str:
+        """Correct an existing event's fields by id (e.g. fix a wrong time or location).
+
+        Pass the event id and a dict of the fields to change, such as
+        {"time": "2026-09-20T14:00:00", "location": "教五楼"} or
+        {"duration": "90 分钟"}.
+        """
+        ok, message = store.update_event(id, fields)
+        track("tool.update_event", f"id={id}")
+        if not ok:
+            return f"更新失败：{message}"
+        return f"已更新活动 {id}"
+
     return [
         search_events,
         create_reminder,
@@ -174,6 +223,8 @@ def build_campus_tools(
         list_pending_reviews,
         review_pending,
         get_stats,
+        add_event,
+        update_event,
     ]
 
 

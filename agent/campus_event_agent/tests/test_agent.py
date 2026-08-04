@@ -78,6 +78,8 @@ class LangChainAgentTests(unittest.TestCase):
                 "list_pending_reviews",
                 "review_pending",
                 "get_stats",
+                "add_event",
+                "update_event",
             ],
         )
 

@@ -4,6 +4,11 @@ const state = {
   sessionId: localStorage.getItem("campus_event_session") || `session-${Date.now()}`,
 };
 
+// 活动缓存：供编辑/删除按钮按 ID 取回整条活动数据。
+let eventsCache = {};
+// 当前正在编辑的活动 ID；null 表示新增模式。
+let editingEventId = null;
+
 // 查询 DOM 的简写。
 const $ = (selector) => document.querySelector(selector);
 
@@ -66,6 +71,13 @@ async function loadCategories() {
     option.textContent = category;
     select.appendChild(option);
   }
+  const datalist = $("#event-category-options");
+  datalist.innerHTML = "";
+  for (const category of data.categories) {
+    const option = document.createElement("option");
+    option.value = category;
+    datalist.appendChild(option);
+  }
 }
 
 // 加载用户兴趣标签，并回填勾选状态和自定义标签。
@@ -124,9 +136,11 @@ async function loadEvents() {
 function renderEvents(events) {
   const body = $("#events-body");
   body.innerHTML = "";
+  eventsCache = {};
   $("#result-count").textContent = `${events.length} 条结果`;
   $("#empty-events").classList.toggle("hidden", events.length > 0);
   for (const event of events) {
+    eventsCache[event.id] = event;
     const tr = document.createElement("tr");
     const tags = (event.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
     tr.innerHTML = `
@@ -136,8 +150,99 @@ function renderEvents(events) {
       <td>${escapeHtml(event.location)}</td>
       <td>${escapeHtml(event.category)}</td>
       <td>${escapeHtml(event.source)}</td>
+      <td class="row-actions">
+        <button data-action="edit-event" data-id="${escapeHtml(event.id)}" type="button" class="secondary">编辑</button>
+        <button data-action="delete-event" data-id="${escapeHtml(event.id)}" type="button" class="danger">删除</button>
+      </td>
     `;
     body.appendChild(tr);
+  }
+}
+
+// 把分钟数转成弹窗回填用的可读时长文本。
+function formatDurationInput(minutes) {
+  if (!minutes) return "";
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (hours && remainder) return `${hours} 小时 ${remainder} 分钟`;
+  if (hours) return `${hours} 小时`;
+  return `${remainder} 分钟`;
+}
+
+// 把 ISO 时间转成 datetime-local 输入框需要的 YYYY-MM-DDTHH:mm。
+function toLocalInputValue(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// 打开新增/编辑弹窗：传 event 为编辑，不传为新增。
+function openEventModal(event = null) {
+  editingEventId = event ? event.id : null;
+  $("#event-modal-title").textContent = event ? "编辑活动" : "新增活动";
+  $("#event-id").value = event ? event.id : "";
+  $("#event-name").value = event ? event.name : "";
+  $("#event-category").value = event ? event.category : "";
+  $("#event-time").value = event ? toLocalInputValue(event.standard_time) : "";
+  $("#event-duration").value = event ? formatDurationInput(event.duration_minutes) : "";
+  $("#event-location").value = event ? event.location : "";
+  $("#event-description").value = event ? event.description || "" : "";
+  $("#event-tags").value = event ? (event.tags || []).join(", ") : "";
+  $("#event-contact").value = event ? event.contact || "" : "";
+  $("#event-modal").classList.remove("hidden");
+}
+
+// 关闭新增/编辑弹窗并清空编辑状态。
+function closeEventModal() {
+  $("#event-modal").classList.add("hidden");
+  editingEventId = null;
+}
+
+// 保存新增或编辑的活动。
+async function saveEvent(event) {
+  event.preventDefault();
+  const payload = {
+    name: $("#event-name").value.trim(),
+    category: $("#event-category").value.trim(),
+    time: $("#event-time").value,
+    duration: $("#event-duration").value.trim(),
+    location: $("#event-location").value.trim(),
+    description: $("#event-description").value.trim(),
+    tags: $("#event-tags").value,
+    contact: $("#event-contact").value.trim(),
+  };
+  if (!payload.name || !payload.time || !payload.location) {
+    addMessage("assistant", "请填写名称、开始时间和地点。");
+    return;
+  }
+  try {
+    if (editingEventId) {
+      payload.id = editingEventId;
+      await api("/api/events/update", { method: "POST", body: JSON.stringify(payload) });
+      addMessage("assistant", `已更新活动：${payload.name}`);
+    } else {
+      const data = await api("/api/events", { method: "POST", body: JSON.stringify(payload) });
+      const pushed = data.pushed && data.pushed.length ? `（兴趣推送 ${data.pushed.length} 条）` : "";
+      addMessage("assistant", `已新增活动：${data.event.name}（ID ${data.event.id}）${pushed}`);
+    }
+    closeEventModal();
+    await Promise.all([loadEvents(), loadCategories(), loadStats()]);
+  } catch (error) {
+    addMessage("assistant", `保存失败：${error.message}`);
+  }
+}
+
+// 删除活动前二次确认，成功后刷新列表和级联状态。
+async function deleteEvent(eventId, eventName) {
+  if (!window.confirm(`确定删除活动「${eventName}」吗？相关提醒将同步取消。`)) return;
+  try {
+    await api("/api/events/delete", { method: "POST", body: JSON.stringify({ id: eventId }) });
+    addMessage("assistant", `已删除活动：${eventName}`);
+    await Promise.all([loadEvents(), loadCategories(), renderReminders(), renderReminderAlerts(), renderNotifications(), loadStats()]);
+  } catch (error) {
+    addMessage("assistant", `删除失败：${error.message}`);
   }
 }
 
@@ -310,6 +415,11 @@ function setupActions() {
   });
   $("#fetch-button").addEventListener("click", fetchEvents);
   $("#save-preferences").addEventListener("click", savePreferences);
+  $("#add-event-button").addEventListener("click", () => openEventModal());
+  $("#event-form").addEventListener("submit", saveEvent);
+  document.querySelectorAll("[data-close-modal]").forEach((element) => {
+    element.addEventListener("click", closeEventModal);
+  });
   $("#search-input").addEventListener("keydown", (event) => {
     if (event.key === "Enter") loadEvents();
   });
@@ -344,6 +454,11 @@ function setupActions() {
           body: JSON.stringify({ id, approved: action === "approve" }),
         });
         await Promise.all([renderPending(), loadEvents(), loadStats()]);
+      } else if (action === "edit-event") {
+        openEventModal(eventsCache[id] || null);
+      } else if (action === "delete-event") {
+        const event = eventsCache[id];
+        deleteEvent(id, event ? event.name : id);
       }
     } catch (error) {
       addMessage("assistant", `操作失败：${error.message}`);

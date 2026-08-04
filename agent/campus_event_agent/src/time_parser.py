@@ -387,3 +387,36 @@ def parse_time_range(
             display=single.display,
         )
     return None
+
+
+# 持续时长正则：支持“2小时30分钟”“1.5小时”“90分钟”“1h30m”等写法。
+_DURATION_RE = re.compile(
+    r"^\s*(?:(\d+(?:\.\d+)?)\s*(?:小时|时|h)\s*(?:(\d+)\s*(?:分钟|分|m))?"
+    r"|(\d+(?:\.\d+)?)\s*(?:分钟|分|m))\s*$",
+    re.IGNORECASE,
+)
+
+
+# 把人类可读的持续时长统一成分钟数；空串或非法输入返回 None。
+def parse_duration(text: str | None) -> int | None:
+    """Return total minutes for a human duration, or None if invalid."""
+    if text is None:
+        return None
+    normalized = str(text).strip().lower()
+    if not normalized:
+        return None
+    if re.fullmatch(r"\d+", normalized):
+        minutes = int(normalized)
+        return minutes if minutes > 0 else None
+    match = _DURATION_RE.match(normalized)
+    if not match:
+        return None
+    hours_text, minutes_text, minutes_only = match.groups()
+    minutes = 0
+    if hours_text:
+        minutes += int(float(hours_text) * 60)
+    if minutes_text:
+        minutes += int(minutes_text)
+    if minutes_only:
+        minutes += int(float(minutes_only))
+    return minutes if minutes > 0 else None

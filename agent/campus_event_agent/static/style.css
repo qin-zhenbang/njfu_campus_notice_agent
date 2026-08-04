@@ -513,3 +513,72 @@ tr:last-child td {
   }
 }
 
+/* 列表标题区操作按钮与活动弹窗样式。 */
+.panel-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.row-actions button {
+  padding: 4px 10px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+/* 新增/编辑活动弹窗。 */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 30, 0.45);
+}
+
+.modal-dialog {
+  position: relative;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modal-dialog h2 {
+  margin-bottom: 12px;
+}
+
+.modal-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-dialog textarea {
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}

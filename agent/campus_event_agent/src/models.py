@@ -11,7 +11,19 @@ from datetime import datetime
 from typing import Any
 
 
-# 活动模型：raw_time 保留原始表达，time 保存标准化后的 ISO 时间。
+# 根据起止时间计算分钟数；缺失或格式错误时返回 0。
+def minutes_between(start: str, end: str) -> int:
+    try:
+        start_dt = datetime.fromisoformat(start)
+        end_dt = datetime.fromisoformat(end)
+    except ValueError:
+        return 0
+    minutes = int((end_dt - start_dt).total_seconds() // 60)
+    return minutes if minutes > 0 else 0
+
+
+# 活动模型：raw_time 保留原始表达，time 保存标准化后的 ISO 时间，
+# duration_minutes 保存活动持续时长（分钟），列表按此展示，不再使用结束时间。
 @dataclass
 class Event:
     id: str
@@ -24,12 +36,15 @@ class Event:
     source: str = ""
     source_url: str = ""
     tags: list[str] = field(default_factory=list)
-    end_time: str = ""
+    duration_minutes: int = 0
     contact: str = ""
 
     @classmethod
-    # 从 JSON 字典恢复活动对象，缺省字段使用空值。
+    # 从 JSON 字典恢复活动对象，缺省字段使用空值；旧数据中的 end_time 会换算成时长。
     def from_dict(cls, data: dict[str, Any]) -> "Event":
+        duration_minutes = int(data.get("duration_minutes", 0) or 0)
+        if not duration_minutes and data.get("end_time"):
+            duration_minutes = minutes_between(str(data.get("time", "")), str(data.get("end_time", "")))
         return cls(
             id=str(data.get("id", "")),
             name=str(data.get("name", "")),
@@ -41,7 +56,7 @@ class Event:
             source=str(data.get("source", "")),
             source_url=str(data.get("source_url", "")),
             tags=[str(tag) for tag in data.get("tags", [])],
-            end_time=str(data.get("end_time", "")),
+            duration_minutes=duration_minutes,
             contact=str(data.get("contact", "")),
         )
 
@@ -55,27 +70,21 @@ class Event:
             "name": self.name,
             "standard_time": self.time,
             "duration": self._format_duration(),
+            "duration_minutes": self.duration_minutes,
             "raw_time": self.raw_time,
             "location": self.location,
             "category": self.category,
             "source": self.source,
             "description": self.description,
             "tags": self.tags,
+            "contact": self.contact,
         }
 
-    # 根据开始时间和结束时间计算可读时长；缺失或格式错误时返回 "-"。
+    # 根据 duration_minutes 生成可读时长；未设置时返回 "-"。
     def _format_duration(self) -> str:
-        if not self.end_time:
+        if not self.duration_minutes:
             return "-"
-        try:
-            start = datetime.fromisoformat(self.time)
-            end = datetime.fromisoformat(self.end_time)
-        except ValueError:
-            return "-"
-        minutes = int((end - start).total_seconds() // 60)
-        if minutes <= 0:
-            return "-"
-        hours, remainder = divmod(minutes, 60)
+        hours, remainder = divmod(self.duration_minutes, 60)
         if hours and remainder:
             return f"{hours}小时{remainder}分钟"
         if hours:

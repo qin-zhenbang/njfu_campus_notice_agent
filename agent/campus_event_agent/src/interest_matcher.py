@@ -136,6 +136,16 @@ class InterestMatcher:
                     item["read"] = True
             self.save_notifications()
 
+    # 移除某个活动的全部推送通知，避免悬空引用，返回移除数量。
+    def remove_by_event(self, event_id: str) -> int:
+        with self._lock:
+            before = len(self.notifications)
+            self.notifications = [item for item in self.notifications if item.get("event_id") != event_id]
+            removed = before - len(self.notifications)
+            if removed:
+                self.save_notifications()
+            return removed
+
 
 # 兴趣子 Agent：把新入库活动转换成用户可看到的推送。
 class InterestAgent:

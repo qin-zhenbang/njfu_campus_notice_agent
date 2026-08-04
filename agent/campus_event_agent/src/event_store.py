@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import json
 import re
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
 from .config import EVENT_FILE, MAX_RESULTS
 from .models import Event
+from .time_parser import parse_duration
 
 
 # 类别别名：让“比赛”“分享”等口语词也能命中标准类别。
@@ -23,8 +25,11 @@ CATEGORY_ALIASES = {
     "就业指导": ["就业", "职业", "招聘"],
 }
 
+# 手动新增活动使用的默认来源标识。
+MANUAL_SOURCE = "手动添加"
 
-# 负责从 JSON 加载活动，提供校验、查询和新增能力。
+
+# 负责从 JSON 加载活动，提供校验、查询、新增、编辑和删除能力。
 class EventStore:
     # 默认使用配置中的 events.json，测试时可传入临时路径。
     def __init__(self, path: Path | str | None = None) -> None:
@@ -121,7 +126,117 @@ class EventStore:
         self.save()
         return True, "ok"
 
-    # 先精确匹配标准类别，再通过别名和子串做宽松匹配。
+    # 便捷新增：不传 ID 时自动生成 EVT-编号，再转成 Event 调用 add_event。
+    def create_event(self, data: dict[str, Any]) -> tuple[bool, Event | str]:
+        name = str(data.get("name", "")).strip()
+        time_value = self._normalize_iso(str(data.get("time", "")).strip())
+        location = str(data.get("location", "")).strip()
+        if not name or not time_value or not location:
+            return False, "缺少名称、时间或地点"
+
+        event_id = str(data.get("id", "")).strip()
+        if not event_id:
+            event_id = self._next_event_id()
+        duration_minutes = self._parse_duration_value(data)
+        if duration_minutes is None:
+            return False, "持续时间无法解析，示例：90 分钟 / 1.5 小时"
+        event = Event(
+            id=event_id,
+            name=name,
+            category=str(data.get("category", "")).strip() or "其他",
+            raw_time=str(data.get("raw_time", "")).strip() or time_value,
+            time=time_value,
+            location=location,
+            description=str(data.get("description", "")).strip(),
+            source=str(data.get("source", "")).strip() or MANUAL_SOURCE,
+            source_url=str(data.get("source_url", "")).strip(),
+            tags=self._parse_tags(data.get("tags")),
+            duration_minutes=duration_minutes,
+            contact=str(data.get("contact", "")).strip(),
+        )
+        ok, message = self.add_event(event)
+        if not ok:
+            return False, message
+        return True, event
+
+    # 按 ID 更新可编辑字段，校验必填后保存。
+    def update_event(self, event_id: str, fields: dict[str, Any]) -> tuple[bool, str]:
+        event = self.get(event_id)
+        if event is None:
+            return False, "活动不存在"
+        editable = {
+            "name", "category", "time", "location",
+            "description", "tags", "contact", "raw_time", "source", "source_url",
+        }
+        for key, value in fields.items():
+            if key == "duration":
+                text = str(value).strip()
+                if not text:
+                    event.duration_minutes = 0
+                else:
+                    parsed = parse_duration(text)
+                    if parsed is None:
+                        return False, "持续时间无法解析，示例：90 分钟 / 1.5 小时"
+                    event.duration_minutes = parsed
+            elif key == "duration_minutes":
+                try:
+                    minutes = int(value)
+                except (TypeError, ValueError):
+                    return False, "duration_minutes 必须是非负整数"
+                if minutes < 0:
+                    return False, "duration_minutes 不能为负数"
+                event.duration_minutes = minutes
+            elif key not in editable:
+                continue
+            elif key == "tags":
+                event.tags = self._parse_tags(value)
+            elif key == "time":
+                text = str(value).strip()
+                event.time = self._normalize_iso(text) if text else ""
+            else:
+                setattr(event, key, str(value).strip())
+        if not event.name or not event.time or not event.location:
+            return False, "缺少名称、时间或地点"
+        self.save()
+        return True, "ok"
+
+    # 按 ID 删除活动，成功后落盘。
+    def delete_event(self, event_id: str) -> tuple[bool, str]:
+        for index, event in enumerate(self.events):
+            if event.id == event_id:
+                del self.events[index]
+                self.save()
+                return True, "ok"
+        return False, "活动不存在"
+
+    # 从请求中解析持续时间：优先 duration 文本，其次 duration_minutes 数字。
+    @staticmethod
+    def _parse_duration_value(data: dict[str, Any]) -> int | None:
+        raw = data.get("duration")
+        if raw not in (None, ""):
+            return parse_duration(str(raw))
+        raw_minutes = data.get("duration_minutes")
+        if raw_minutes in (None, ""):
+            return 0
+        try:
+            minutes = int(raw_minutes)
+        except (TypeError, ValueError):
+            return None
+        return minutes if minutes >= 0 else None
+
+    # 生成下一个 EVT 编号：取现有 EVT 数字后缀最大值 +1，冲突时回退到 uuid。
+    def _next_event_id(self) -> str:
+        max_number = 0
+        for event in self.events:
+            match = re.fullmatch(r"EVT-(\d+)", event.id)
+            if match:
+                max_number = max(max_number, int(match.group(1)))
+        candidate = f"EVT-{max_number + 1:03d}"
+        if self.get(candidate):
+            return f"EVT-{uuid.uuid4().hex[:8].upper()}"
+        return candidate
+
+    # 先精确匹配标准类别，再通过别名字串做宽松匹配。
     def _category_matches(self, event: Event, category: str) -> bool:
         target = category.strip()
         if event.category == target:
@@ -133,7 +248,7 @@ class EventStore:
                 return True
         return False
 
-    # 关键词命中名称/类别/地点/描述/来源/标签时打分，用于结果排序。
+    # 关键字命中名称/类别/地点/描述/来源/标签时打分，用于结果排序。
     def _match_score(self, event: Event, query: str) -> int:
         if not query:
             return 1
@@ -150,7 +265,7 @@ class EventStore:
         if query in haystack:
             return 100
         score = 0
-        for token in re.split(r"[\s,，、]+", query):
+        for token in re.split(r"[\s,，。、]+", query):
             if token and token in haystack:
                 score += 1
         return score
@@ -163,6 +278,27 @@ class EventStore:
         except ValueError:
             return datetime.min
 
+    # 把时间统一成 ISO 秒级格式；无法解析时原样返回。
+    @staticmethod
+    def _normalize_iso(value: str) -> str:
+        text = (value or "").strip().replace(" ", "T")
+        if not text:
+            return ""
+        try:
+            return datetime.fromisoformat(text).isoformat(timespec="seconds")
+        except ValueError:
+            return value.strip()
+
+    # 标签兼容逗号/顿号/空格分隔的字符串或列表。
+    @staticmethod
+    def _parse_tags(value: Any) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            items = [str(tag).strip() for tag in value]
+        else:
+            items = re.split(r"[,\uFF0C\u3001\s]+", str(value).strip())
+        return [tag for tag in items if tag]
+
     def to_display_list(self, events: Iterable[Event]) -> list[dict[str, Any]]:
         return [event.display_dict() for event in events]
-

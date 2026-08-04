@@ -69,5 +69,36 @@ class ReminderStoreTests(unittest.TestCase):
         self.assertEqual(self.store.all()[0].status, "done")
 
 
+    def test_cancel_by_event(self):
+        now = datetime(2026, 8, 3, 12, 0, 0)
+        first = self.store.create(
+            user="default",
+            event_id="EVT-001",
+            event_name="First Event",
+            due_at=now.isoformat(),
+        )
+        second = self.store.create(
+            user="default",
+            event_id="EVT-001",
+            event_name="Second Event",
+            due_at=(now + timedelta(days=1)).isoformat(),
+        )
+        other = self.store.create(
+            user="default",
+            event_id="EVT-002",
+            event_name="Other Event",
+            due_at=(now + timedelta(days=2)).isoformat(),
+        )
+        self.store.check_due(now)
+
+        count = self.store.cancel_by_event("EVT-001")
+
+        self.assertEqual(count, 2)
+        statuses = {item.id: item.status for item in self.store.all()}
+        self.assertEqual(statuses[first.id], "cancelled")
+        self.assertEqual(statuses[second.id], "cancelled")
+        self.assertEqual(statuses[other.id], "pending")
+
+
 if __name__ == "__main__":
     unittest.main()

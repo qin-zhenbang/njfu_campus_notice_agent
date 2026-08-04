@@ -105,6 +105,18 @@ class ReminderStore:
                     return True
             return False
 
+    # 按活动 ID 把未完成提醒统一置为 cancelled，返回处理数量。
+    def cancel_by_event(self, event_id: str) -> int:
+        with self._lock:
+            count = 0
+            for reminder in self.reminders:
+                if reminder.event_id == event_id and reminder.status in {"pending", "notified"}:
+                    reminder.status = "cancelled"
+                    count += 1
+            if count:
+                self.save()
+            return count
+
     # 非法时间按最大时间处理，确保不会误判为到期。
     @staticmethod
     def _parse(value: str) -> datetime:
