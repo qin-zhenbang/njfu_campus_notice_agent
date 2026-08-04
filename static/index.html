@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>校园活动与通知聚合 Agent</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <!-- 顶部信息栏：展示系统标题和运行状态。 -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <h1>校园活动与通知聚合 Agent</h1>
+          <p class="subtitle">活动检索、时间标准化与 LangChain Agent</p>
+        </div>
+        <div class="status-cluster">
+          <span id="event-count" class="status-pill">活动：-</span>
+          <span id="llm-status" class="status-pill">LLM：检测中</span>
+          <span id="pending-count" class="status-pill">待审核：-</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 兴趣推送与到期提醒的顶部提示条。 -->
+    <section id="notification-strip" class="notification-strip hidden"></section>
+    <section id="reminder-strip" class="notification-strip reminder-strip hidden"></section>
+
+    <!-- 主内容区：上方为筛选栏，下方为活动列表和侧边操作面板。 -->
+    <main class="app-shell">
+      <!-- 筛选栏：支持关键词、类别和日期查询，并提供手动抓取。 -->
+      <section class="filter-panel">
+        <div class="filter-row">
+          <label>
+            <span>关键词</span>
+            <input id="search-input" type="search" placeholder="活动名、地点、标签" />
+          </label>
+          <label>
+            <span>类别</span>
+            <select id="category-select">
+              <option value="">全部类别</option>
+            </select>
+          </label>
+          <label>
+            <span>开始时间</span>
+            <input id="from-input" type="date" />
+          </label>
+          <div class="button-row">
+            <button id="search-button" type="button">查询</button>
+            <button id="reset-button" type="button" class="secondary">重置</button>
+            <button id="fetch-button" type="button" class="secondary">抓取更新</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 内容网格：左侧统一活动列表，右侧 Agent/偏好/提醒/待审核页签。 -->
+      <section class="content-grid">
+        <div class="events-panel">
+          <div class="panel-head">
+            <h2>统一活动列表</h2>
+            <div class="panel-head-actions">
+              <span id="result-count" class="muted"></span>
+              <button id="add-event-button" type="button">+ 手动添加</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>活动名称</th>
+                  <th>标准化时间</th>
+                  <th>持续时间</th>
+                  <th>地点</th>
+                  <th>类别</th>
+                  <th>来源</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="events-body"></tbody>
+            </table>
+          </div>
+          <p id="empty-events" class="empty hidden">暂无符合条件的活动</p>
+        </div>
+
+        <!-- 侧边面板：包含聊天 Agent、兴趣偏好、提醒和人工审核四个功能。 -->
+        <aside class="side-panel">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="agent" type="button">Agent</button>
+            <button class="tab" data-tab="preferences" type="button">偏好</button>
+            <button class="tab" data-tab="reminders" type="button">提醒</button>
+            <button class="tab" data-tab="pending" type="button">待审核</button>
+          </div>
+
+          <div id="tab-agent" class="tab-panel active">
+            <div id="chat-log" class="chat-log" aria-live="polite"></div>
+            <div class="suggestions">
+              <button class="chip" data-prompt="下周三有什么讲座" type="button">下周三有什么讲座</button>
+              <button class="chip" data-prompt="11.15 的活动" type="button">11.15 的活动</button>
+              <button class="chip" data-prompt="提醒我参加 ACM 程序设计竞赛宣讲会" type="button">提醒我参加 ACM 程序设计竞赛宣讲会</button>
+              <button class="chip" data-prompt="我关注讲座和竞赛" type="button">我关注讲座和竞赛</button>
+              <button class="chip" data-prompt="刷新校园活动" type="button">刷新校园活动</button>
+            </div>
+            <form id="chat-form" class="chat-form">
+              <input id="chat-input" type="text" placeholder="输入查询或指令" autocomplete="off" />
+              <button type="submit">发送</button>
+            </form>
+            <div class="chat-meta">
+              <span id="chat-mode">LangChain Agent</span>
+              <span id="usage-text"></span>
+            </div>
+          </div>
+
+          <div id="tab-preferences" class="tab-panel">
+            <div class="pref-panel">
+              <label>
+                <span>兴趣标签</span>
+                <span id="pref-category-options" class="pref-options"></span>
+              </label>
+              <label>
+                <span>自定义标签</span>
+                <input id="pref-custom" type="text" placeholder="AI, 志愿服务" autocomplete="off" />
+              </label>
+              <p class="pref-rule">选择后，新活动入库时只要命中其中一个标签，就会主动推送。</p>
+              <div class="item-actions">
+                <button id="save-preferences" type="button">保存偏好</button>
+              </div>
+              <p id="pref-status" class="empty"></p>
+            </div>
+          </div>
+
+          <div id="tab-reminders" class="tab-panel">
+            <div id="reminders-list" class="list-panel"></div>
+          </div>
+
+          <div id="tab-pending" class="tab-panel">
+            <div id="pending-list" class="list-panel"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <!-- 新增/编辑活动弹窗：新增和编辑共用同一表单。 -->
+    <div id="event-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-dialog">
+        <h2 id="event-modal-title">新增活动</h2>
+        <form id="event-form">
+          <input id="event-id" type="hidden" />
+          <label>
+            <span>名称（必填）</span>
+            <input id="event-name" type="text" required />
+          </label>
+          <label>
+            <span>类别（可自定义）</span>
+            <input id="event-category" type="text" list="event-category-options" placeholder="选择或输入自定义类别" />
+          </label>
+          <datalist id="event-category-options"></datalist>
+          <label>
+            <span>开始时间（必填）</span>
+            <input id="event-time" type="datetime-local" required />
+          </label>
+          <label>
+            <span>持续时间（可选）</span>
+            <input id="event-duration" type="text" placeholder="如 90 分钟 / 1.5 小时" />
+          </label>
+          <label>
+            <span>地点（必填）</span>
+            <input id="event-location" type="text" required />
+          </label>
+          <label>
+            <span>描述</span>
+            <textarea id="event-description" rows="3"></textarea>
+          </label>
+          <label>
+            <span>标签（逗号分隔）</span>
+            <input id="event-tags" type="text" placeholder="讲座, AI" />
+          </label>
+          <label>
+            <span>联系人</span>
+            <input id="event-contact" type="text" />
+          </label>
+          <div class="modal-actions">
+            <button type="button" id="event-cancel" class="secondary" data-close-modal>取消</button>
+            <button type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 页面交互逻辑。 -->
+    <script src="/app.js"></script>
+  </body>
+</html>

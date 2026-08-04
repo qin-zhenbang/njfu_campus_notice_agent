@@ -1,0 +1,110 @@
+{
+  "counts": {
+    "interest_agent.evaluate": 16,
+    "interest_agent.batch": 1
+  },
+  "calls": [
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360296",
+      "duration_ms": 2.36,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360295",
+      "duration_ms": 1.38,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359340",
+      "duration_ms": 0.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359339",
+      "duration_ms": 0.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359197",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358840",
+      "duration_ms": 2.26,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358839",
+      "duration_ms": 2.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358837",
+      "duration_ms": 1.85,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358759",
+      "duration_ms": 2.43,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358758",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358757",
+      "duration_ms": 0.05,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358756",
+      "duration_ms": 0.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358301",
+      "duration_ms": 2.0,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358300",
+      "duration_ms": 2.07,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358299",
+      "duration_ms": 1.87,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.batch",
+      "detail": "source=fetch, events=15, pushed=9",
+      "duration_ms": 48.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=manual-add, event=EVT-027",
+      "duration_ms": 0.03,
+      "tokens": 0
+    }
+  ]
+}
