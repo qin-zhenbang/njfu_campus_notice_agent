@@ -47,7 +47,55 @@ AGENT_SYSTEM_PROMPT = (
     "\u5982\u679c\u5de5\u5177\u6ca1\u6709\u8fd4\u56de\u7ed3\u679c\uff0c\u8bf7\u660e\u786e\u8bf4\u660e\u3002"
     "\u6bcf\u4e2a\u7528\u6237\u8bf7\u6c42\u6700\u591a\u8c03\u7528 10 \u6b21\u5de5\u5177\uff0c"
     "\u5c3d\u91cf\u5728\u5c11\u6570\u6b21\u8c03\u7528\u5185\u5b8c\u6210\u4efb\u52a1\u3002"
+    "\u8bf7\u76f4\u63a5\u4ee5\u7eaf\u6587\u672c\u56de\u590d\uff0c\u4e0d\u8981\u4f7f\u7528 Markdown \u683c\u5f0f\uff08\u4e0d\u7528\u52a0\u7c97\u3001\u4e0d\u7528\u6807\u9898\u3001\u4e0d\u7528\u5217\u8868\u7b26\u53f7\u3001\u4e0d\u7528\u4ee3\u7801\u5757\uff09\u3002"
 )
+
+
+# Markdown sanitizer: strip common Markdown syntax, keep plain text.
+_MD_CODE_FENCE = re.compile(r"```+.*?\n(.*?)\n?```+", re.DOTALL)
+_MD_INLINE_CODE = re.compile(r"`([^`]*)`")
+_MD_IMAGE = re.compile(r"!\[([^\]]*)\]\([^)]*\)")
+_MD_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+_MD_REF = re.compile(r"\[\^?\d+\]")
+_MD_HEADER = re.compile(r"^#{1,6}\s*", re.MULTILINE)
+_MD_BLOCKQUOTE = re.compile(r"^>\s?", re.MULTILINE)
+_MD_HR = re.compile(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$", re.MULTILINE)
+_MD_LIST = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+", re.MULTILINE)
+_MD_TABLE_SEP = re.compile(r"^\s*\|?[\s:|-]*-[\s:|-]*\|?\s*$", re.MULTILINE)
+_MD_EMPH = re.compile(r"(\*\*|__|~~)(.+?)\1|(\*|_)(.+?)\3")
+_MD_TAG = re.compile(r"<[^>]+>")
+
+
+def md_to_text(text: str) -> str:
+    """Strip common Markdown syntax, returning plain text."""
+    if not text:
+        return text
+    t = _MD_CODE_FENCE.sub(lambda m: m.group(1).strip(), text)
+    t = _MD_INLINE_CODE.sub(r"\1", t)
+    t = _MD_IMAGE.sub(r"\1", t)
+    t = _MD_LINK.sub(r"\1", t)
+    t = _MD_REF.sub("", t)
+    t = _MD_HEADER.sub("", t)
+    t = _MD_BLOCKQUOTE.sub("", t)
+    t = _MD_HR.sub("", t)
+    t = _MD_TABLE_SEP.sub("", t)
+    t = _MD_LIST.sub("", t)
+    for _ in range(4):
+        new = _MD_EMPH.sub(lambda m: m.group(2) or m.group(4), t)
+        if new == t:
+            break
+        t = new
+    t = _MD_TAG.sub("", t)
+    lines = []
+    for line in t.splitlines():
+        if "|" in line:
+            cells = [c.strip() for c in line.split("|")]
+            line = " ".join(c for c in cells if c)
+        lines.append(line.rstrip())
+    t = "\n".join(lines)
+    t = re.sub(r"[ \t]+", " ", t)
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    return t.strip()
 
 
 # 校园 Agent 主类：组装工具、LLM 和中间件，处理对话与降级回复。
@@ -99,7 +147,7 @@ class LangChainAgent:
                 model=self.model_name,
                 temperature=0.1,
                 timeout=timeout,
-                max_retries=0,
+                max_retries=3,
             )
             self.agent = create_agent(
                 model=self.model,
@@ -199,9 +247,10 @@ class LangChainAgent:
         messages = result.get("messages", []) if isinstance(result, dict) else []
         for message in reversed(messages):
             if isinstance(message, AIMessage) and message.content:
-                return str(message.content).strip()
+                return md_to_text(str(message.content)).strip()
         if messages:
-            return str(getattr(messages[-1], "content", "") or "").strip() or "Agent \u6ca1\u6709\u8fd4\u56de\u5185\u5bb9\u3002"
+            content = str(getattr(messages[-1], "content", "") or "").strip()
+            return md_to_text(content) or "Agent \u6ca1\u6709\u8fd4\u56de\u5185\u5bb9\u3002"
         return "Agent \u6ca1\u6709\u8fd4\u56de\u5185\u5bb9\u3002"
 
     # 统计一次 Agent 运行中的工具调用次数。

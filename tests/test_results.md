@@ -1,8 +1,8 @@
 # 测试结果
 
-- 运行时间：2026-08-04T09:16:20
-- 用例数：59
-- 通过：59
+- 运行时间：2026-08-04T10:10:29
+- 用例数：60
+- 通过：60
 - 失败：0
 - 错误：0
 
@@ -14,6 +14,7 @@ test_create_reminder_tool (test_agent.LangChainAgentTests.test_create_reminder_t
 test_default_tool_limit_is_ten (test_agent.LangChainAgentTests.test_default_tool_limit_is_ten) ... ok
 test_empty_input (test_agent.LangChainAgentTests.test_empty_input) ... ok
 test_history_and_persistence (test_agent.LangChainAgentTests.test_history_and_persistence) ... ok
+test_md_to_text_plain (test_agent.LangChainAgentTests.test_md_to_text_plain) ... ok
 test_offline_fallback (test_agent.LangChainAgentTests.test_offline_fallback) ... ok
 test_offline_reminder_phrase (test_agent.LangChainAgentTests.test_offline_reminder_phrase) ... ok
 test_search_tool (test_agent.LangChainAgentTests.test_search_tool) ... ok
@@ -70,7 +71,7 @@ test_tomorrow (test_time_parser.TimeParserTests.test_tomorrow) ... ok
 test_weekday_afternoon (test_time_parser.TimeParserTests.test_weekday_afternoon) ... ok
 
 ----------------------------------------------------------------------
-Ran 59 tests in 1.530s
+Ran 60 tests in 1.900s
 
 OK
 

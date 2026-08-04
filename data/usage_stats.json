@@ -1,7 +1,11 @@
 {
   "counts": {
-    "interest_agent.evaluate": 16,
-    "interest_agent.batch": 1
+    "interest_agent.evaluate": 31,
+    "interest_agent.batch": 2,
+    "agent.error": 3,
+    "tool.search_events": 3,
+    "agent.run": 4,
+    "tool.create_reminder": 1
   },
   "calls": [
     {
@@ -104,6 +108,168 @@
       "kind": "interest_agent.evaluate",
       "detail": "source=manual-add, event=EVT-027",
       "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360296",
+      "duration_ms": 1.78,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360295",
+      "duration_ms": 1.91,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359340",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359339",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359197",
+      "duration_ms": 0.02,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358840",
+      "duration_ms": 1.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358839",
+      "duration_ms": 1.31,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358837",
+      "duration_ms": 2.31,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358759",
+      "duration_ms": 1.43,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358758",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358757",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358756",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358301",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358300",
+      "duration_ms": 1.16,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358299",
+      "duration_ms": 1.81,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.batch",
+      "detail": "source=fetch, events=15, pushed=8",
+      "duration_ms": 34.44,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.error",
+      "detail": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Error - Request Blocked</title>\n    <style>\n        body {\n            font-family: 'Arial', sans-serif;\n            background-color: #f3f7f9;\n   ",
+      "duration_ms": 929.05,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.error",
+      "detail": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Error - Request Blocked</title>\n    <style>\n        body {\n            font-family: 'Arial', sans-serif;\n            background-color: #f3f7f9;\n   ",
+      "duration_ms": 590.83,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.error",
+      "detail": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Error - Request Blocked</title>\n    <style>\n        body {\n            font-family: 'Arial', sans-serif;\n            background-color: #f3f7f9;\n   ",
+      "duration_ms": 875.45,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=11.15 的活动",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 2306.39,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.create_reminder",
+      "detail": "event_name=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "提醒我参加 ACM 程序设计竞赛宣讲会",
+      "duration_ms": 3479.04,
+      "tokens": 2
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=11.15 的活动",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 2451.22,
+      "tokens": 1
+    },
+    {
+      "kind": "agent.run",
+      "detail": "你好",
+      "duration_ms": 1338.76,
       "tokens": 0
     }
   ]
