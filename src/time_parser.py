@@ -127,10 +127,10 @@ def _parse_semester_week(text: str, base: date, semester_start: date) -> datetim
 def _parse_absolute_date(text: str, base: date) -> tuple[date, date] | None:
     """解析 ISO 日期、中文月日和 “11.15” 等绝对日期，返回匹配到的文本区间。"""
     patterns = [
-        r"(?P<year>20\d{2})[年./-](?P<month>\d{1,2})[月./-](?P<day>\d{1,2})日?",
-        r"(?P<month>\d{1,2})[月./-](?P<day>\d{1,2})日?",
-        r"(?P<year>20\d{2})年(?P<month>\d{1,2})月(?P<day>\d{1,2})日",
-        r"(?P<month>\d{1,2})月(?P<day>\d{1,2})日",
+        r"(?P<year>20\d{2})[年./-](?P<month>\d{1,2})[月./-](?P<day>\d{1,2})(?:日|号)?",
+        r"(?P<month>\d{1,2})[月./-](?P<day>\d{1,2})(?:日|号)?",
+        r"(?P<year>20\d{2})年(?P<month>\d{1,2})月(?P<day>\d{1,2})(?:日|号)",
+        r"(?P<month>\d{1,2})月(?P<day>\d{1,2})(?:日|号)",
     ]
     for pattern in patterns:
         match = re.search(pattern, text)
@@ -158,7 +158,7 @@ def _parse_relative_date(text: str, base: date) -> date | None:
         return base + timedelta(days=2)
 
     if "下个月" in normalized:
-        month_day = re.search(r"下个月\s*(\d{1,2})日?", normalized)
+        month_day = re.search(r"下个月\s*(\d{1,2})(?:日|号)?", normalized)
         if month_day:
             day = int(month_day.group(1))
             if base.month == 12:
@@ -174,7 +174,7 @@ def _parse_relative_date(text: str, base: date) -> date | None:
             return date(base.year + 1, 1, 1)
         return date(base.year, base.month + 1, 1)
     if "本月" in normalized or "这个月" in normalized:
-        month_day = re.search(r"(?:本月|这个月)\s*(\d{1,2})日?", normalized)
+        month_day = re.search(r"(?:本月|这个月)\s*(\d{1,2})(?:日|号)?", normalized)
         if month_day:
             try:
                 return date(base.year, base.month, int(month_day.group(1)))
@@ -263,6 +263,18 @@ def parse_datetime(
     return None
 
 
+# 无具体钟点的日期/星期表达展开为整天（00:00 至 23:59:59），明确钟点则保留。
+def _expand_placeholder_to_day(single: ParsedTime) -> ParsedTime:
+    if single.kind in {"absolute", "week", "relative"} and (
+        single.start.time() == datetime.min.time()
+        or single.start.time() == datetime.min.time().replace(hour=9)
+    ):
+        day = single.start.date()
+        single.start = datetime.combine(day, datetime.min.time())
+        single.end = datetime.combine(day, datetime.max.time())
+    return single
+
+
 # 把查询范围解析为起止时间，例如“本周”“下个月”“11.15”或“A到B”。
 def parse_time_range(
     text: str,
@@ -281,8 +293,7 @@ def parse_time_range(
         if weekday_match:
             single = parse_datetime(normalized, base_date, semester_start)
             if single:
-                if single.start.time() == datetime.min.time().replace(hour=9):
-                    single.end = datetime.combine(single.start.date(), datetime.max.time())
+                single = _expand_placeholder_to_day(single)
                 return ParsedTime(
                     start=single.start,
                     end=single.end,
@@ -301,8 +312,7 @@ def parse_time_range(
         if weekday_match:
             single = parse_datetime(normalized, base_date, semester_start)
             if single:
-                if single.start.time() == datetime.min.time().replace(hour=9):
-                    single.end = datetime.combine(single.start.date(), datetime.max.time())
+                single = _expand_placeholder_to_day(single)
                 return ParsedTime(
                     start=single.start,
                     end=single.end,
@@ -317,6 +327,16 @@ def parse_time_range(
             display=f"{monday:%Y-%m-%d} 至 {monday + timedelta(days=6):%Y-%m-%d}",
         )
     if "本月" in normalized or "这个月" in normalized:
+        if re.search(r"(?:本月|这个月)\s*\d{1,2}(?:日|号)?", normalized):
+            single = parse_datetime(normalized, base_date, semester_start)
+            if single is not None:
+                single = _expand_placeholder_to_day(single)
+                return ParsedTime(
+                    start=single.start,
+                    end=single.end,
+                    kind="range",
+                    display=single.display,
+                )
         first = date(base_date.year, base_date.month, 1)
         if base_date.month == 12:
             last = date(base_date.year, 12, 31)
@@ -329,6 +349,16 @@ def parse_time_range(
             display=f"{first:%Y-%m-%d} 至 {last:%Y-%m-%d}",
         )
     if "下个月" in normalized:
+        if re.search(r"下个月\s*\d{1,2}(?:日|号)?", normalized):
+            single = parse_datetime(normalized, base_date, semester_start)
+            if single is not None:
+                single = _expand_placeholder_to_day(single)
+                return ParsedTime(
+                    start=single.start,
+                    end=single.end,
+                    kind="range",
+                    display=single.display,
+                )
         if base_date.month == 12:
             first = date(base_date.year + 1, 1, 1)
         else:
@@ -367,8 +397,8 @@ def parse_time_range(
             end = parse_datetime(right, base_date, semester_start)
             if start and end:
                 return ParsedTime(
-                    start=start.start,
-                    end=end.end,
+                    start=_expand_placeholder_to_day(start).start,
+                    end=_expand_placeholder_to_day(end).end,
                     kind="range",
                     display=f"{start.display} 至 {end.display}",
                 )
@@ -376,10 +406,7 @@ def parse_time_range(
     # 兜底：没有明确范围时按单日范围处理。
     single = parse_datetime(normalized, base_date, semester_start)
     if single is not None:
-        if single.kind in {"absolute", "week", "relative"} and (
-            single.start.time() == datetime.min.time() or single.start.time() == datetime.min.time().replace(hour=9)
-        ):
-            single.end = datetime.combine(single.start.date(), datetime.max.time())
+        single = _expand_placeholder_to_day(single)
         return ParsedTime(
             start=single.start,
             end=single.end,

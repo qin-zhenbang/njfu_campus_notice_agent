@@ -1,23 +1,23 @@
 # 测试结果
 
-- 运行时间：2026-08-04T10:24:38
-- 用例数：60
-- 通过：60
+- 运行时间：2026-08-04T11:40:51
+- 用例数：65
+- 通过：65
 - 失败：0
 - 错误：0
 
 ## 输出
 
 ```text
-test_builds_campus_tools (test_agent.LangChainAgentTests.test_builds_campus_tools) ... ok
-test_create_reminder_tool (test_agent.LangChainAgentTests.test_create_reminder_tool) ... ok
-test_default_tool_limit_is_ten (test_agent.LangChainAgentTests.test_default_tool_limit_is_ten) ... ok
-test_empty_input (test_agent.LangChainAgentTests.test_empty_input) ... ok
-test_history_and_persistence (test_agent.LangChainAgentTests.test_history_and_persistence) ... ok
-test_md_to_text_plain (test_agent.LangChainAgentTests.test_md_to_text_plain) ... ok
-test_offline_fallback (test_agent.LangChainAgentTests.test_offline_fallback) ... ok
-test_offline_reminder_phrase (test_agent.LangChainAgentTests.test_offline_reminder_phrase) ... ok
-test_search_tool (test_agent.LangChainAgentTests.test_search_tool) ... ok
+test_builds_campus_tools (test_agent.CampusAgentTests.test_builds_campus_tools) ... ok
+test_builds_subagents_and_covers_all_tools (test_agent.CampusAgentTests.test_builds_subagents_and_covers_all_tools) ... ok
+test_create_reminder_tool (test_agent.CampusAgentTests.test_create_reminder_tool) ... ok
+test_default_tool_limit_is_ten (test_agent.CampusAgentTests.test_default_tool_limit_is_ten) ... ok
+test_empty_input (test_agent.CampusAgentTests.test_empty_input) ... ok
+test_history_and_persistence (test_agent.CampusAgentTests.test_history_and_persistence) ... ok
+test_llm_failure_returns_error (test_agent.CampusAgentTests.test_llm_failure_returns_error) ... ok
+test_md_to_text_plain (test_agent.CampusAgentTests.test_md_to_text_plain) ... ok
+test_search_tool (test_agent.CampusAgentTests.test_search_tool) ... ok
 test_create_event_auto_id (test_event_store.EventStoreTests.test_create_event_auto_id) ... ok
 test_create_event_invalid_duration (test_event_store.EventStoreTests.test_create_event_invalid_duration) ... ok
 test_create_event_requires_fields (test_event_store.EventStoreTests.test_create_event_requires_fields) ... ok
@@ -47,9 +47,14 @@ test_missing_data_list_raises (test_njfu_feed.NJFUFixtureTests.test_missing_data
 test_summary_fields (test_njfu_feed.NJFUFixtureTests.test_summary_fields) ... ok
 test_run_adds_good_and_queues_bad (test_njfu_feed.SchoolHtmlScraperTests.test_run_adds_good_and_queues_bad) ... ok
 test_second_run_keeps_pending_once (test_njfu_feed.SchoolHtmlScraperTests.test_second_run_keeps_pending_once) ... ok
-test_cancel_by_event (test_reminders.ReminderStoreTests.test_cancel_by_event) ... ok
+test_cancel_by_event_deletes (test_reminders.ReminderStoreTests.test_cancel_by_event_deletes) ... ok
+test_cancel_deletes_reminder (test_reminders.ReminderStoreTests.test_cancel_deletes_reminder) ... ok
 test_check_due_marks_notified_once (test_reminders.ReminderStoreTests.test_check_due_marks_notified_once) ... ok
-test_complete_after_notified (test_reminders.ReminderStoreTests.test_complete_after_notified) ... ok
+test_complete_deletes_reminder (test_reminders.ReminderStoreTests.test_complete_deletes_reminder) ... ok
+test_prune_keeps_recent_notified (test_reminders.ReminderStoreTests.test_prune_keeps_recent_notified) ... ok
+test_prune_removes_stale_done_and_cancelled (test_reminders.ReminderStoreTests.test_prune_removes_stale_done_and_cancelled) ... ok
+test_prune_removes_stale_notified (test_reminders.ReminderStoreTests.test_prune_removes_stale_notified) ... ok
+test_retention_disabled_keeps_everything (test_reminders.ReminderStoreTests.test_retention_disabled_keeps_everything) ... ok
 test_scheduler_check_now_uses_store (test_reminders.ReminderStoreTests.test_scheduler_check_now_uses_store) ... ok
 test_deduplication (test_scraper.ScraperTests.test_deduplication) ... ok
 test_manual_review (test_scraper.ScraperTests.test_manual_review) ... ok
@@ -71,7 +76,7 @@ test_tomorrow (test_time_parser.TimeParserTests.test_tomorrow) ... ok
 test_weekday_afternoon (test_time_parser.TimeParserTests.test_weekday_afternoon) ... ok
 
 ----------------------------------------------------------------------
-Ran 60 tests in 1.936s
+Ran 65 tests in 3.139s
 
 OK
 

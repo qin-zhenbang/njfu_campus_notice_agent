@@ -450,6 +450,20 @@
     "contact": "青年志愿者协会"
   },
   {
+    "id": "EVT-026",
+    "name": "返家乡活动",
+    "category": "讲座",
+    "raw_time": "2026-08-12T09:00:00",
+    "time": "2026-08-12T09:00:00",
+    "location": "无",
+    "description": "",
+    "source": "手动添加",
+    "source_url": "",
+    "tags": [],
+    "duration_minutes": 120,
+    "contact": ""
+  },
+  {
     "id": "NJFU-360296",
     "name": "Development of Cellulose-Based Foams and Films for Sustainable Packaging Applications",
     "category": "讲座",
@@ -649,6 +663,23 @@
     "tags": [
       "校网",
       "文体活动"
+    ],
+    "duration_minutes": 0,
+    "contact": ""
+  },
+  {
+    "id": "NJFU-358301",
+    "name": "Emulating Terpene Biosynthesis in the Synthesis of Complex Polycyclic Natural Products",
+    "category": "讲座",
+    "raw_time": "2026年5月22日10:00",
+    "time": "2026-05-22T10:00:00",
+    "location": "化工院2400",
+    "description": "【报告人】Phillip Andrew Evans 教授 【报告时间】2026年5月22日10:00 【报告地点】化工院2400",
+    "source": "南京林业大学校网",
+    "source_url": "http://www.njfu.edu.cn/xsdt/20260521/i358301.html",
+    "tags": [
+      "校网",
+      "讲座"
     ],
     "duration_minutes": 0,
     "contact": ""

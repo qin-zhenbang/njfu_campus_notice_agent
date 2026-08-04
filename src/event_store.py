@@ -97,8 +97,8 @@ class EventStore:
         limit: int = MAX_RESULTS,
     ) -> list[Event]:
         normalized_query = (query or "").strip().lower()
-        start_dt = self._parse_iso(start) if start else None
-        end_dt = self._parse_iso(end) if end else None
+        start_dt = self._parse_bound(start, is_end=False) if start else None
+        end_dt = self._parse_bound(end, is_end=True) if end else None
         results: list[tuple[Event, int]] = []
 
         for event in self.events:
@@ -269,6 +269,20 @@ class EventStore:
             if token and token in haystack:
                 score += 1
         return score
+
+    # 解析查询边界：纯日期（如 2026-09-16）按整天处理，避免当天活动查不到。
+    @staticmethod
+    def _parse_bound(value: str, is_end: bool) -> datetime:
+        text = (value or "").strip()
+        try:
+            parsed = datetime.fromisoformat(text)
+        except ValueError:
+            return datetime.max if is_end else datetime.min
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+            if is_end:
+                return datetime.combine(parsed.date(), datetime.max.time())
+            return datetime.combine(parsed.date(), datetime.min.time())
+        return parsed
 
     # 非法时间统一退回到最小时间，避免排序或范围比较抛异常。
     @staticmethod

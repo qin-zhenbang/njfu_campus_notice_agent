@@ -1,13 +1,1 @@
-[
-  {
-    "id": "REM-110E6902",
-    "user": "default",
-    "event_id": "EVT-003",
-    "event_name": "ACM 程序设计竞赛宣讲会",
-    "due_at": "2026-09-11T19:00:00",
-    "status": "pending",
-    "created_at": "2026-08-04T10:11:41",
-    "note": "",
-    "notified_at": ""
-  }
-]
+[]

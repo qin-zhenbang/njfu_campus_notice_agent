@@ -76,12 +76,15 @@ EVENT_FEED_URL = _get_str("EVENT_FEED_URL", "https://www.njfu.edu.cn/xsdt/index.
 EVENT_FEED_TIMEOUT = _get_int("EVENT_FEED_TIMEOUT", 8)
 EVENT_FEED_PAGES = _get_int("EVENT_FEED_PAGES", 1)
 
-# LLM 配置：默认连接本地 OpenAI 兼容接口
-LLM_ENABLED = _get_bool("LLM_ENABLED", True)
+# LLM 配置：必选的 OpenAI 兼容接口（LLM 为 Agent 运行前提，不再支持关闭后离线降级）
 LLM_BASE_URL = _get_str("LLM_BASE_URL", "http://127.0.0.1:1234/v1")
 LLM_API_KEY = _get_str("LLM_API_KEY", "")
 LLM_MODEL = _get_str("LLM_MODEL", "local-model")
 LLM_TIMEOUT = _get_int("LLM_TIMEOUT", 30)
+
+# 到点提醒保留期（小时）：提醒触发（notified）或完成（done）后超过该时长会被自动清理。
+# 设为 0 表示触发/完成后立即清理；设为 0 以下（如 -1）表示不自动清理。
+REMINDER_RETENTION_HOURS = _get_int("REMINDER_RETENTION_HOURS", 24)
 
 # 后台任务与运行限制
 AUTO_FETCH_ENABLED = _get_bool("AUTO_FETCH_ENABLED", False)

@@ -1,12 +1,14 @@
-"""LangChain Agent、工具构建和离线降级测试。"""
+﻿"""Deep Agents 多智能体（主 Agent + 子 Agent）与工具构建测试。"""
 
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from langchain.agents.middleware import ToolCallLimitMiddleware
+from langchain_core.messages import AIMessage
 
-from src.agent import LangChainAgent, md_to_text
+from src.agent import CampusAgent, md_to_text
 from src.agent_tools import build_campus_tools
 from src.config import DATA_DIR
 from src.event_store import EventStore
@@ -17,7 +19,7 @@ from src.scraper import EventScraper
 
 
 # 在临时目录中运行 Agent，避免污染真实提醒和会话数据。
-class LangChainAgentTests(unittest.TestCase):
+class CampusAgentTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name)
@@ -38,13 +40,12 @@ class LangChainAgentTests(unittest.TestCase):
             scraper=self.scraper,
             middleware=self.middleware,
         )
-        self.agent = LangChainAgent(
+        self.agent = CampusAgent(
             store=self.store,
             reminders=self.reminders,
             matcher=self.matcher,
             scraper=self.scraper,
             middleware=self.middleware,
-            enabled=False,
             conversation_dir=root / "conversations",
         )
 
@@ -55,16 +56,19 @@ class LangChainAgentTests(unittest.TestCase):
         result = self.agent.chat("", session_id="test-empty")
         self.assertIn("\u8bf7\u8f93\u5165", result["reply"])
 
-    def test_offline_fallback(self):
-        result = self.agent.chat("hello", session_id="test-offline")
-        self.assertFalse(result["llm_used"])
-        self.assertIn("\u6a21\u578b\u4e0d\u53ef\u7528", result["reply"])
-
     def test_history_and_persistence(self):
-        first = self.agent.chat("hi", session_id="test-history")
-        second = self.agent.chat("again", session_id="test-history", history=first["history"])
+        fake = {"messages": [AIMessage(content="\u5df2\u6536\u5230")]}
+        with patch.object(self.agent.agent, "invoke", return_value=fake):
+            first = self.agent.chat("hi", session_id="test-history")
+            second = self.agent.chat("again", session_id="test-history", history=first["history"])
         self.assertEqual(len(second["history"]), 4)
         self.assertTrue((Path(self.tmp.name) / "conversations" / "test-history.json").exists())
+
+    def test_llm_failure_returns_error(self):
+        with patch.object(self.agent.agent, "invoke", side_effect=RuntimeError("boom")):
+            result = self.agent.chat("hello", session_id="test-llm-error")
+        self.assertIn("LLM \u8c03\u7528\u5931\u8d25", result["reply"])
+        self.assertEqual(result["tool_calls"], 0)
 
     def test_builds_campus_tools(self):
         names = [tool.name for tool in self.tools]
@@ -92,31 +96,53 @@ class LangChainAgentTests(unittest.TestCase):
         self.assertIn("\u5df2\u521b\u5efa\u63d0\u9192", result)
         self.assertEqual(len(self.reminders.reminders), 1)
 
-    def test_offline_reminder_phrase(self):
-        result = self.agent.chat(
-            "\u63d0\u9192\u6211\u53c2\u52a0 ACM \u7a0b\u5e8f\u8bbe\u8ba1\u7ade\u8d5b\u5ba3\u8bb2\u4f1a",
-            session_id="test-offline-reminder",
-        )
-        self.assertIn("\u5df2\u521b\u5efa\u63d0\u9192", result["reply"])
-        self.assertEqual(len(self.reminders.reminders), 1)
-
     def test_default_tool_limit_is_ten(self):
-        online = LangChainAgent(
+        online = CampusAgent(
             store=self.store,
             reminders=self.reminders,
             matcher=self.matcher,
             scraper=self.scraper,
             middleware=self.middleware,
-            enabled=True,
             max_tool_calls=10,
         )
         limiter = ToolCallLimitMiddleware(run_limit=10, exit_behavior="continue")
         self.assertEqual(limiter.run_limit, 10)
         self.assertEqual(online.max_tool_calls, 10)
         self.assertEqual(online.to_status()["max_tool_calls"], 10)
-        self.assertEqual(online.to_status()["framework"], "langchain-agent")
+        self.assertEqual(online.to_status()["framework"], "deep-agent")
 
-
+    def test_builds_subagents_and_covers_all_tools(self):
+        names = [subagent["name"] for subagent in self.agent.subagents]
+        self.assertEqual(
+            names,
+            [
+                "event_query_agent",
+                "reminder_agent",
+                "preference_agent",
+                "scrape_agent",
+                "event_manage_agent",
+            ],
+        )
+        tool_names = [
+            tool.name
+            for subagent in self.agent.subagents
+            for tool in (subagent.get("tools") or [])
+        ]
+        self.assertEqual(
+            sorted(tool_names),
+            [
+                "add_event",
+                "create_reminder",
+                "get_stats",
+                "list_pending_reviews",
+                "refresh_events",
+                "review_pending",
+                "search_events",
+                "set_preferences",
+                "update_event",
+            ],
+        )
+        self.assertEqual(len(tool_names), 9)
 
     def test_md_to_text_plain(self):
         cases = {

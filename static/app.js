@@ -49,7 +49,7 @@ async function loadStats() {
   try {
     const data = await api("/api/status");
     $("#event-count").textContent = `活动：${data.event_count}`;
-    $("#llm-status").textContent = data.llm.enabled ? `LLM：${data.llm.model}` : "LLM：离线";
+    $("#llm-status").textContent = `LLM：${data.llm.model}`;
     $("#usage-text").textContent = `调用 ${data.usage.total_calls} 次`;
     const pending = await api("/api/pending");
     $("#pending-count").textContent = `待审核：${pending.pending.length}`;
@@ -262,10 +262,11 @@ async function renderReminders() {
       <strong>${escapeHtml(reminder.event_name)}</strong>
       <p>时间：${escapeHtml(formatTime(reminder.due_at))}</p>
       <p>状态：${escapeHtml(reminder.status === "pending" ? "\u5f85\u63d0\u9192" : reminder.status === "notified" ? "\u5df2\u5230\u63d0\u9192" : reminder.status === "done" ? "\u5df2\u5b8c\u6210" : reminder.status === "cancelled" ? "\u5df2\u53d6\u6d88" : reminder.status)}</p>
+      ${reminder.status === "pending" || reminder.status === "notified" ? `
       <div class="item-actions">
         <button data-action="complete" data-id="${escapeHtml(reminder.id)}" type="button">完成</button>
         <button data-action="cancel" data-id="${escapeHtml(reminder.id)}" type="button" class="danger">取消</button>
-      </div>
+      </div>` : ""}
     `;
     container.appendChild(item);
   }
@@ -359,9 +360,9 @@ async function sendChat(message) {
     state.history = data.history || [];
     addMessage("assistant", data.reply);
     const toolInfo = data.tool_calls ? ` · ${data.tool_calls} 次工具` : "";
-    $("#chat-mode").textContent = data.llm_used ? `LangChain Agent${toolInfo}` : "LangChain 离线回复";
+    $("#chat-mode").textContent = `Deep Agent${toolInfo}`;
     $("#usage-text").textContent = `调用 ${data.stats.total_calls} 次`;
-    $("#llm-status").textContent = data.llm_status.enabled ? `LLM：${data.llm_status.model}` : "LLM：离线";
+    $("#llm-status").textContent = `LLM：${data.llm_status.model}`;
     localStorage.setItem("campus_event_session", state.sessionId);
     await Promise.all([loadEvents(), loadPreferences(), renderReminders(), renderPending(), renderNotifications(), loadStats()]);
     for (const action of data.actions || []) {

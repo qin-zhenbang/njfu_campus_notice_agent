@@ -1,12 +1,14 @@
 {
   "counts": {
-    "interest_agent.evaluate": 31,
-    "interest_agent.batch": 2,
-    "agent.error": 3,
-    "tool.search_events": 3,
-    "agent.run": 5,
-    "tool.create_reminder": 1,
-    "tool.set_preferences": 1
+    "interest_agent.evaluate": 63,
+    "interest_agent.batch": 5,
+    "agent.error": 4,
+    "tool.search_events": 30,
+    "agent.run": 35,
+    "tool.create_reminder": 5,
+    "tool.set_preferences": 2,
+    "tool.refresh_events": 1,
+    "tool.get_stats": 3
   },
   "calls": [
     {
@@ -283,6 +285,618 @@
       "kind": "agent.run",
       "detail": "我关注讲座和竞赛",
       "duration_ms": 3352.82,
+      "tokens": 1
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358301",
+      "duration_ms": 2.88,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.batch",
+      "detail": "source=fetch, events=1, pushed=1",
+      "duration_ms": 4.94,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 5729.64,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "这个月底有什么活动",
+      "duration_ms": 3954.48,
+      "tokens": 1
+    },
+    {
+      "kind": "agent.run",
+      "detail": "8月31号有什么活动",
+      "duration_ms": 1866.11,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 1572.78,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=8月31号下午活动",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "8月31号下午活动",
+      "duration_ms": 3379.11,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=11.15 活动",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 6413.89,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=11.15 活动",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 3615.1,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=第2周周三 18:30",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "第2周周三 18:30",
+      "duration_ms": 5463.03,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=11.15",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 22131.92,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=第2周周三 18:30",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "第2周周三 18:30",
+      "duration_ms": 32063.8,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=第2周周三 18:30",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "第2周周三 18:30",
+      "duration_ms": 4901.82,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.create_reminder",
+      "detail": "event_name=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "提醒我参加 ACM 程序设计竞赛宣讲会",
+      "duration_ms": 7421.63,
+      "tokens": 2
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下辈子有什么讲座",
+      "duration_ms": 2997.28,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.create_reminder",
+      "detail": "event_name=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "提醒我参加 ACM 程序设计竞赛宣讲会",
+      "duration_ms": 2457.1,
+      "tokens": 2
+    },
+    {
+      "kind": "tool.set_preferences",
+      "detail": "讲座,竞赛",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "我关注讲座和竞赛",
+      "duration_ms": 3136.95,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.create_reminder",
+      "detail": "event_name=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "提醒我参加 ACM 程序设计竞赛宣讲会",
+      "duration_ms": 4508.37,
+      "tokens": 2
+    },
+    {
+      "kind": "tool.refresh_events",
+      "detail": "manual",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "刷新校园活动",
+      "duration_ms": 2926.57,
+      "tokens": 1
+    },
+    {
+      "kind": "agent.error",
+      "detail": "Connection error.",
+      "duration_ms": 3313.2,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026-08-12 讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.get_stats",
+      "detail": "all",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026-08-12",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 8397.68,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026-08-12 讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 5640.03,
+      "tokens": 1
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=manual-add, event=EVT-026",
+      "duration_ms": 0.02,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026年8月12日 讲座",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.get_stats",
+      "detail": "all",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 5923.08,
+      "tokens": 1
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 1199.86,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026年11月15日",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 5790.75,
+      "tokens": 1
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360296",
+      "duration_ms": 0.61,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360295",
+      "duration_ms": 0.62,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359340",
+      "duration_ms": 0.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359339",
+      "duration_ms": 0.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359197",
+      "duration_ms": 0.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358840",
+      "duration_ms": 0.9,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358839",
+      "duration_ms": 0.8,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358837",
+      "duration_ms": 0.87,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358759",
+      "duration_ms": 0.67,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358758",
+      "duration_ms": 0.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358757",
+      "duration_ms": 0.03,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358756",
+      "duration_ms": 0.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358301",
+      "duration_ms": 1.36,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358300",
+      "duration_ms": 1.34,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358299",
+      "duration_ms": 0.57,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.batch",
+      "detail": "source=fetch, events=15, pushed=9",
+      "duration_ms": 28.51,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "5月22活动",
+      "duration_ms": 1270.2,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "11.15 的活动",
+      "duration_ms": 879.35,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.create_reminder",
+      "detail": "event_name=ACM 程序设计竞赛宣讲会",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "提醒我参加 ACM 程序设计竞赛宣讲会",
+      "duration_ms": 7807.4,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=火星夏令营",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=火星",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "火星夏令营",
+      "duration_ms": 6695.45,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=下辈子",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=下辈子",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下辈子有什么讲座",
+      "duration_ms": 7649.46,
+      "tokens": 1
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=返家乡",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=家乡",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=返家乡",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.get_stats",
+      "detail": "all",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "返家乡讲座",
+      "duration_ms": 8031.55,
+      "tokens": 1
+    },
+    {
+      "kind": "agent.run",
+      "detail": "下周三有什么讲座",
+      "duration_ms": 1944.16,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360296",
+      "duration_ms": 2.26,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-360295",
+      "duration_ms": 1.8,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359340",
+      "duration_ms": 0.05,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359339",
+      "duration_ms": 0.05,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-359197",
+      "duration_ms": 0.06,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358840",
+      "duration_ms": 2.29,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358839",
+      "duration_ms": 5.52,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358837",
+      "duration_ms": 3.63,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358759",
+      "duration_ms": 3.37,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358758",
+      "duration_ms": 0.04,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358757",
+      "duration_ms": 0.05,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358756",
+      "duration_ms": 0.05,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358301",
+      "duration_ms": 2.01,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358300",
+      "duration_ms": 2.84,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.evaluate",
+      "detail": "source=fetch, event=NJFU-358299",
+      "duration_ms": 3.18,
+      "tokens": 0
+    },
+    {
+      "kind": "interest_agent.batch",
+      "detail": "source=fetch, events=15, pushed=9",
+      "duration_ms": 102.44,
+      "tokens": 0
+    },
+    {
+      "kind": "tool.search_events",
+      "detail": "query=2026-05-22",
+      "duration_ms": 0.0,
+      "tokens": 0
+    },
+    {
+      "kind": "agent.run",
+      "detail": "5月22活动",
+      "duration_ms": 7272.66,
       "tokens": 1
     }
   ]

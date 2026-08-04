@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .agent import LangChainAgent
+from .agent import CampusAgent
 from .config import AUTO_FETCH_ENABLED, AUTO_FETCH_INTERVAL, AUTO_REMINDER_ENABLED, AUTO_REMINDER_INTERVAL, HOST, PORT, STATIC_DIR
 from .event_store import EventStore
 from .interest_matcher import InterestAgent, InterestMatcher
@@ -28,7 +28,7 @@ class AppContext:
         self.middleware = Middleware()
         self.interest_agent = InterestAgent(self.matcher, self.middleware)
         self.scraper = EventScraper(store=self.store)
-        self.agent = LangChainAgent(
+        self.agent = CampusAgent(
             store=self.store,
             reminders=self.reminders,
             matcher=self.matcher,
@@ -230,10 +230,10 @@ class AgentHandler(BaseHTTPRequestHandler):
             if self.app.store.get(event_id) is None:
                 self._send_json({"error": "活动不存在"}, status=404)
                 return
-            cancelled = self.app.reminders.cancel_by_event(event_id)
+            removed_reminders = self.app.reminders.cancel_by_event(event_id)
             removed = self.app.matcher.remove_by_event(event_id)
             ok, _ = self.app.store.delete_event(event_id)
-            self._send_json({"ok": ok, "cancelled_reminders": cancelled, "removed_notifications": removed})
+            self._send_json({"ok": ok, "removed_reminders": removed_reminders, "removed_notifications": removed})
             return
         self._send_json({"error": "接口不存在"}, status=404)
 

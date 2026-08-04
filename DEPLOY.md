@@ -41,7 +41,6 @@ cp .env.example .env
 |---|---|
 | `HOST` / `PORT` | 服务监听地址和端口 |
 | `SEMESTER_START` | 学期第一周周一的日期 |
-| `LLM_ENABLED` | 是否启用 LLM |
 | `LLM_BASE_URL` | OpenAI 兼容接口地址 |
 | `LLM_API_KEY` | 云端 API Key，LM Studio 可留空 |
 | `LLM_MODEL` | 模型名 |

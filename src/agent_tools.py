@@ -24,7 +24,7 @@ def build_campus_tools(
     scraper: EventScraper,
     middleware: Middleware,
 ) -> list[Any]:
-    """构建 LangChainAgent 使用的固定校园工具列表。"""
+    """构建校园 Agent（主 Agent 与子 Agent 共用）的固定校园工具列表。"""
 
     def track(kind: str, detail: str) -> None:
         if middleware is not None:
@@ -233,7 +233,7 @@ def _clean_search_query(text: str, has_time_range: bool) -> str:
         tokens = []
         for token in re.split(r"[\s,，。、；]+", cleaned):
             token = re.sub(r"(?:活动|信息)$", "", token.strip())
-            if token and token not in {"活动", "信息", "有什么", "有哪些"}:
+            if token and not re.fullmatch(r"\d{1,2}(?:日|号)", token) and token not in {"活动", "信息", "有什么", "有哪些", "上午", "中午", "下午", "晚上", "今晚", "凌晨", "到", "至", "~", "～", "-"}:
                 tokens.append(token)
         return " ".join(tokens)
     return " ".join(cleaned.split())
@@ -241,14 +241,15 @@ def _clean_search_query(text: str, has_time_range: bool) -> str:
 
 def _strip_time_expr(text: str) -> str:
     patterns = [
-        r"20\d{2}年\d{1,2}月\d{1,2}日",
-        r"\d{1,2}月\d{1,2}日",
+        r"20\d{2}年\d{1,2}月\d{1,2}(?:日|号)",
+        r"\d{1,2}月\d{1,2}(?:日|号)",
         r"\d{1,2}\.\d{1,2}",
         r"\d{4}-\d{2}-\d{2}",
         r"第\s*\d{1,2}\s*周(?:\s*周[一二三四五六日天])?",
-        r"(?:本周|这周|下周|本月|这个月|下个月|今天|明天|后天)(?:周[一二三四五六日天])?",
+        r"(?:本周|这周|下周|本月|这个月|下个月|今天|明天|后天)(?:(?:周|星期|礼拜)?[一二三四五六日天])?",
         r"(?:周[一二三四五六日天]|星期[一二三四五六日天])(?:上午|中午|下午|晚上)?",
-        r"\d{1,2}[:：]\d{2}",
+        r"(?:上午|中午|下午|晚上|今晚|凌晨)",
+        r"\d{1,2}[:\uff1a]\d{2}",
     ]
     cleaned = text
     for pattern in patterns:
