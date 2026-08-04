@@ -1,4 +1,4 @@
-"""Deterministic LangChain tools backed by the campus event services."""
+"""基于校园活动服务封装的一批确定性 LangChain 工具。"""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def build_campus_tools(
     scraper: EventScraper,
     middleware: Middleware,
 ) -> list[Any]:
-    """Build the fixed campus tool list used by LangChainAgent."""
+    """构建 LangChainAgent 使用的固定校园工具列表。"""
 
     def track(kind: str, detail: str) -> None:
         if middleware is not None:
@@ -38,11 +38,10 @@ def build_campus_tools(
         end: str = "",
         limit: int = MAX_RESULTS,
     ) -> str:
-        """Search campus events by text, category and ISO time range.
+        """按文本、类别和 ISO 时间范围检索校园活动。
 
-        Use this for questions about lectures, competitions, clubs, academic
-        notices, cultural activities or volunteer services. Include the original
-        wording as query, including time expressions such as "11.15 的活动".
+        适用于讲座、竞赛、社团、教务通知、文体活动或志愿服务等查询；
+        把用户原话（含 “11.15 的活动” 这类时间表达）作为 query 传入。
         """
         query = (query or "").strip()
         category = (category or "").strip()
@@ -78,7 +77,7 @@ def build_campus_tools(
         user: str = "default",
         note: str = "",
     ) -> str:
-        """Create a due reminder for a campus event by name or event id."""
+        """按活动名称或 ID 为校园活动创建到点提醒。"""
         event = store.get((event_id or "").strip()) if event_id else None
         if event is None:
             matches = [
@@ -108,7 +107,7 @@ def build_campus_tools(
 
     @tool("set_preferences")
     def set_preferences(tags: list[str], user: str = "default") -> str:
-        """Set interest tags. Any matching tag triggers a notification."""
+        """设置兴趣标签，任一标签命中新活动即触发推送。"""
         cleaned = [str(tag).strip() for tag in (tags or []) if str(tag).strip()]
         prefs = matcher.set_preferences(cleaned, user=user or "default")
         track("tool.set_preferences", ",".join(prefs.tags))
@@ -117,7 +116,7 @@ def build_campus_tools(
 
     @tool("refresh_events")
     def refresh_events(source: str = "manual") -> str:
-        """Fetch the campus feed, add new events and queue unparsable ones."""
+        """抓取校园活动源，新增活动并把无法解析的记录放入待审核。"""
         result = scraper.run()
         track("tool.refresh_events", source)
         summary = (
@@ -130,7 +129,7 @@ def build_campus_tools(
 
     @tool("list_pending_reviews")
     def list_pending_reviews() -> str:
-        """List records waiting for human review."""
+        """列出等待人工审核的记录。"""
         pending = scraper.pending()
         track("tool.list_pending_reviews", f"pending={len(pending)}")
         if not pending:
@@ -146,7 +145,7 @@ def build_campus_tools(
 
     @tool("review_pending")
     def review_pending(id: str, approved: bool = True) -> str:
-        """Approve or reject one pending scrape record."""
+        """批准或拒绝某条待人工审核的抓取记录。"""
         ok = str(approved).strip().lower() not in {"0", "false", "no", "否"}
         item = scraper.review(id, ok)
         track("tool.review_pending", f"id={id}, approved={ok}")
@@ -156,7 +155,7 @@ def build_campus_tools(
 
     @tool("get_stats")
     def get_stats() -> str:
-        """Return event, category and middleware usage statistics."""
+        """返回活动、类别和中间件调用统计。"""
         stats = middleware.stats()
         categories = store.categories()
         track("tool.get_stats", "all")
@@ -177,11 +176,10 @@ def build_campus_tools(
         duration: str = "",
         contact: str = "",
     ) -> str:
-        """Manually add a campus event record (name, time, location required).
+        """手动新增一条校园活动记录（名称、时间、地点为必填）。
 
-        Use this to record an activity the user knows about that is missing
-        from the library. The event id is generated automatically. The optional
-        duration accepts values like "90 分钟", "1.5 小时" or "2小时30分钟".
+        用于把用户知道但库里缺失的活动补充进来。活动 ID 自动生成；
+        可选 duration 支持 “90 分钟”“1.5 小时”“2小时30分钟” 等写法。
         """
         ok, result = store.create_event(
             {
@@ -203,11 +201,11 @@ def build_campus_tools(
 
     @tool("update_event")
     def update_event(id: str, fields: dict[str, Any]) -> str:
-        """Correct an existing event's fields by id (e.g. fix a wrong time or location).
+        """按 ID 修正已有活动字段（例如改正时间或地点）。
 
-        Pass the event id and a dict of the fields to change, such as
-        {"time": "2026-09-20T14:00:00", "location": "教五楼"} or
-        {"duration": "90 分钟"}.
+        传入活动 ID 和要修改的字段字典，例如
+        {"time": "2026-09-20T14:00:00", "location": "教五楼"} 或
+        {"duration": "90 分钟"}。
         """
         ok, message = store.update_event(id, fields)
         track("tool.update_event", f"id={id}")

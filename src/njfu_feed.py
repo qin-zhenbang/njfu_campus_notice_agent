@@ -1,4 +1,4 @@
-"""Parser for the Nanjing Forestry University activity preview page."""
+"""南京林业大学活动预告页的解析器。"""
 
 from __future__ import annotations
 
@@ -14,14 +14,14 @@ SOURCE_NAME = "南京林业大学校网"
 
 
 class SchoolFeedParseError(ValueError):
-    """Raised when the school page no longer contains a parseable list."""
+    """当校网页面不再包含可解析的活动列表时抛出。"""
 
 
 def extract_school_items(page_html: str, max_pages: int = 1) -> list[dict[str, Any]]:
-    """Return normalized candidates from the embedded dataList payload.
+    """从页面内嵌的 dataList 数据里提取标准化候选记录。
 
-    The page usually embeds one or more page objects. By default only the first
-    page is imported so a scheduled run focuses on the latest activity list.
+    页面通常会内嵌一个或多个分页对象。默认只导入第一页，
+    让定时抓取聚焦最新的活动列表。
     """
     if not page_html or "dataList" not in page_html:
         raise SchoolFeedParseError("页面中未找到 dataList 数据")
@@ -55,7 +55,7 @@ def extract_school_items(page_html: str, max_pages: int = 1) -> list[dict[str, A
 
 
 def parse_summary_fields(summary: str) -> dict[str, str]:
-    """Extract labeled fields such as 报告人, 报告时间 and 报告地点."""
+    """从摘要中提取【报告人】【报告时间】【报告地点】等带标签字段。"""
     if not summary:
         return {}
     cleaned = html.unescape(summary)
@@ -72,7 +72,7 @@ def parse_summary_fields(summary: str) -> dict[str, str]:
 
 
 def classify_njfu_category(title: str, summary: str = "") -> str:
-    """Choose a stable project category from title and summary keywords."""
+    """根据标题和摘要关键词选择一个稳定的项目类别。"""
     text = f"{title} {summary}"
     if any(keyword in text for keyword in ("讲座", "分享", "宣讲", "培训")):
         return "讲座"
@@ -90,7 +90,7 @@ def classify_njfu_category(title: str, summary: str = "") -> str:
 
 
 def to_candidate(item: dict[str, Any]) -> dict[str, Any]:
-    """Convert one school-page item into the scraper candidate schema."""
+    """把校网页面的一条记录转换成抓取器需要的候选字段结构。"""
     title = _clean_text(item.get("title") or item.get("infotitle") or "")
     fields = parse_summary_fields(str(item.get("summary", "")))
     summary = _clean_text(str(item.get("summary", "")))

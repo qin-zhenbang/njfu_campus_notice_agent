@@ -51,7 +51,7 @@ AGENT_SYSTEM_PROMPT = (
 )
 
 
-# Markdown sanitizer: strip common Markdown syntax, keep plain text.
+# Markdown 清洗器：去掉常见 Markdown 语法，保留纯文本。
 _MD_CODE_FENCE = re.compile(r"```+.*?\n(.*?)\n?```+", re.DOTALL)
 _MD_INLINE_CODE = re.compile(r"`([^`]*)`")
 _MD_IMAGE = re.compile(r"!\[([^\]]*)\]\([^)]*\)")
@@ -67,7 +67,7 @@ _MD_TAG = re.compile(r"<[^>]+>")
 
 
 def md_to_text(text: str) -> str:
-    """Strip common Markdown syntax, returning plain text."""
+    """去掉常见 Markdown 语法，返回纯文本。"""
     if not text:
         return text
     t = _MD_CODE_FENCE.sub(lambda m: m.group(1).strip(), text)
@@ -100,7 +100,7 @@ def md_to_text(text: str) -> str:
 
 # 校园 Agent 主类：组装工具、LLM 和中间件，处理对话与降级回复。
 class LangChainAgent:
-    """Campus agent built with create_agent and a 10-call run limit."""
+    """基于 create_agent 构建、带 10 次工具调用上限的校园 Agent。"""
 
     # 初始化时构建工具；LLM 禁用时只保留本地回复能力。
     def __init__(
@@ -234,7 +234,7 @@ class LangChainAgent:
             return reply, True, tool_calls
         except Exception as exc:  # noqa: BLE001 - keep chat usable on agent errors
             duration_ms = (time.perf_counter() - started) * 1000
-            logger.warning("LangChain agent failed: %s", exc)
+            logger.warning("LangChain Agent 调用失败: %s", exc)
             self.middleware.record("agent.error", str(exc), duration_ms)
             local_reply = self._local_reminder_reply(message)
             if local_reply is not None:

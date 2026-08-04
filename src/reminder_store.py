@@ -68,7 +68,7 @@ class ReminderStore:
 
     # 把到期提醒标记为已通知并返回，避免同一提醒重复弹出。
     def check_due(self, now: datetime | None = None) -> list[Reminder]:
-        """Mark due pending reminders as notified and return them."""
+        """把到期的 pending 提醒标记为已通知并返回，避免重复弹出。"""
         now = now or datetime.now()
         due = self.due(now)
         if not due:

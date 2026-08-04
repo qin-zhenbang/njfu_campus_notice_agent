@@ -63,7 +63,7 @@ class EventScraper:
 
     # 优先抓取 HTTP 页面；页面不是 HTML 时按 JSON 处理，也可读本地样例文件。
     def fetch_feed(self) -> tuple[list[dict[str, Any]], str | None]:
-        """Fetch candidates from the school HTML page, a JSON URL, or local feed."""
+        """从校网 HTML 页面、JSON 地址或本地示例源获取候选记录。"""
         if self.feed_url.startswith(("http://", "https://")):
             try:
                 request = urllib.request.Request(

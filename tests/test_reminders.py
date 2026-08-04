@@ -1,4 +1,4 @@
-"""Reminder store and scheduler tests."""
+"""待办提醒存储与调度器的测试。"""
 
 import tempfile
 import unittest

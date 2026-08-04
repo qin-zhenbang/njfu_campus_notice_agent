@@ -57,7 +57,7 @@ def _parse_semester_start(value: str | None) -> date:
 
 # 从文本中提取时段，返回 (小时, 分钟)；没有钟点表达时返回 None。
 def _extract_time(text: str) -> tuple[int, int] | None:
-    """Return (hour, minute) from text if a clock expression exists."""
+    """从文本中提取钟点，返回 (小时, 分钟)；没有钟点表达时返回 None。"""
     match = re.search(
         r"(上午|中午|下午|晚上|凌晨)?\s*(\d{1,2})\s*[点时:：]\s*(\d{2})?(?:\s*分)?",
         text,
@@ -125,7 +125,7 @@ def _parse_semester_week(text: str, base: date, semester_start: date) -> datetim
 
 # 解析 ISO 日期、中文月日和“11.15”等绝对日期形式。
 def _parse_absolute_date(text: str, base: date) -> tuple[date, date] | None:
-    """Parse ISO/Chinese dotted date forms and return the matched text range."""
+    """解析 ISO 日期、中文月日和 “11.15” 等绝对日期，返回匹配到的文本区间。"""
     patterns = [
         r"(?P<year>20\d{2})[年./-](?P<month>\d{1,2})[月./-](?P<day>\d{1,2})日?",
         r"(?P<month>\d{1,2})[月./-](?P<day>\d{1,2})日?",
@@ -211,7 +211,7 @@ def parse_datetime(
     base: date | datetime | None = None,
     semester_start: str | None = None,
 ) -> ParsedTime | None:
-    """Parse one time expression into a concrete datetime range."""
+    """把单个时间表达解析为具体的 datetime 范围。"""
     if not text or not text.strip():
         return None
     base_date = _as_date(base or date.today())
@@ -269,7 +269,7 @@ def parse_time_range(
     base: date | datetime | None = None,
     semester_start: str | None = None,
 ) -> ParsedTime | None:
-    """Parse a query range such as 本周, 下个月, 11.15 or A到B."""
+    """把查询范围解析为起止时间，例如 本周、下个月、11.15 或 A到B。"""
     if not text or not text.strip():
         return None
     base_date = _as_date(base or date.today())
@@ -399,7 +399,7 @@ _DURATION_RE = re.compile(
 
 # 把人类可读的持续时长统一成分钟数；空串或非法输入返回 None。
 def parse_duration(text: str | None) -> int | None:
-    """Return total minutes for a human duration, or None if invalid."""
+    """把人类可读的持续时长换算成分钟数；空串或非法输入返回 None。"""
     if text is None:
         return None
     normalized = str(text).strip().lower()

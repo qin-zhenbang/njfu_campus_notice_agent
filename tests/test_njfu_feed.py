@@ -1,4 +1,4 @@
-"""Tests for the Nanjing Forestry University feed parser and scraper flow."""
+"""南京林业大学校网活动解析器与抓取流程的测试。"""
 
 import tempfile
 import unittest

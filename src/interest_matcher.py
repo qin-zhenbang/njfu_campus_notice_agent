@@ -149,7 +149,7 @@ class InterestMatcher:
 
 # 兴趣子 Agent：把新入库活动转换成用户可看到的推送。
 class InterestAgent:
-    """Sub-agent that turns newly stored events into user pushes."""
+    """兴趣子 Agent：把新入库的活动转换成面向用户的推送。"""
 
     def __init__(self, matcher: InterestMatcher, middleware=None) -> None:
         self.matcher = matcher
