@@ -1,8 +1,8 @@
 # 测试结果
 
-- 运行时间：2026-08-04T11:40:51
-- 用例数：65
-- 通过：65
+- 运行时间：2026-08-06T15:50:57
+- 用例数：64
+- 通过：64
 - 失败：0
 - 错误：0
 
@@ -15,7 +15,6 @@ test_create_reminder_tool (test_agent.CampusAgentTests.test_create_reminder_tool
 test_default_tool_limit_is_ten (test_agent.CampusAgentTests.test_default_tool_limit_is_ten) ... ok
 test_empty_input (test_agent.CampusAgentTests.test_empty_input) ... ok
 test_history_and_persistence (test_agent.CampusAgentTests.test_history_and_persistence) ... ok
-test_llm_failure_returns_error (test_agent.CampusAgentTests.test_llm_failure_returns_error) ... ok
 test_md_to_text_plain (test_agent.CampusAgentTests.test_md_to_text_plain) ... ok
 test_search_tool (test_agent.CampusAgentTests.test_search_tool) ... ok
 test_create_event_auto_id (test_event_store.EventStoreTests.test_create_event_auto_id) ... ok
@@ -76,7 +75,7 @@ test_tomorrow (test_time_parser.TimeParserTests.test_tomorrow) ... ok
 test_weekday_afternoon (test_time_parser.TimeParserTests.test_weekday_afternoon) ... ok
 
 ----------------------------------------------------------------------
-Ran 65 tests in 3.139s
+Ran 64 tests in 2.248s
 
 OK
 

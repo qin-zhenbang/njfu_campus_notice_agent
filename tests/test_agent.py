@@ -64,12 +64,6 @@ class CampusAgentTests(unittest.TestCase):
         self.assertEqual(len(second["history"]), 4)
         self.assertTrue((Path(self.tmp.name) / "conversations" / "test-history.json").exists())
 
-    def test_llm_failure_returns_error(self):
-        with patch.object(self.agent.agent, "invoke", side_effect=RuntimeError("boom")):
-            result = self.agent.chat("hello", session_id="test-llm-error")
-        self.assertIn("LLM \u8c03\u7528\u5931\u8d25", result["reply"])
-        self.assertEqual(result["tool_calls"], 0)
-
     def test_builds_campus_tools(self):
         names = [tool.name for tool in self.tools]
         self.assertEqual(

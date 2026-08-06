@@ -28,7 +28,7 @@
 
     <!-- 主内容区：上方为筛选栏，下方为活动列表和侧边操作面板。 -->
     <main class="app-shell">
-      <!-- 筛选栏：支持关键词、类别和日期查询，并提供手动抓取。 -->
+      <!-- 筛选栏：支持关键词、类别和日期查询；活动更新由后台定时任务自动完成。 -->
       <section class="filter-panel">
         <div class="filter-row">
           <label>
@@ -48,7 +48,6 @@
           <div class="button-row">
             <button id="search-button" type="button">查询</button>
             <button id="reset-button" type="button" class="secondary">重置</button>
-            <button id="fetch-button" type="button" class="secondary">抓取更新</button>
           </div>
         </div>
       </section>
@@ -60,9 +59,31 @@
             <h2>统一活动列表</h2>
             <div class="panel-head-actions">
               <span id="result-count" class="muted"></span>
+              <div class="view-toggle" role="group" aria-label="视图切换">
+                <button id="view-calendar-btn" class="view-toggle-btn active" type="button">日历</button>
+                <button id="view-list-btn" class="view-toggle-btn" type="button">列表</button>
+              </div>
               <button id="add-event-button" type="button">+ 手动添加</button>
             </div>
           </div>
+          <!-- 日历视图：月网格 + 当天活动 + 待定时间。 -->
+          <div id="calendar-view">
+            <div class="calendar-toolbar">
+              <button id="cal-prev" type="button" class="secondary">‹ 上月</button>
+              <h3 id="calendar-title" class="calendar-title"></h3>
+              <button id="cal-today" type="button" class="secondary">今天</button>
+              <button id="cal-next" type="button" class="secondary">下月 ›</button>
+            </div>
+            <div class="calendar-weekdays">
+              <span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>周日</span>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+            <div id="day-events" class="day-section hidden"></div>
+            <div id="pending-time" class="day-section hidden"></div>
+          </div>
+
+          <!-- 列表视图：保留原有表格。 -->
+          <div id="list-view" class="hidden">
           <div class="table-wrap">
             <table>
               <thead>
@@ -80,6 +101,7 @@
             </table>
           </div>
           <p id="empty-events" class="empty hidden">暂无符合条件的活动</p>
+          </div>
         </div>
 
         <!-- 侧边面板：包含聊天 Agent、兴趣偏好、提醒和人工审核四个功能。 -->

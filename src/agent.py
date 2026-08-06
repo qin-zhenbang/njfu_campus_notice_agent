@@ -20,7 +20,7 @@ from langchain.agents.middleware import ToolCallLimitMiddleware
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
-from .agent_tools import build_campus_tools
+from .agent_tools import _current_session, _pending_actions, build_campus_tools
 from .config import (
     CONVERSATION_DIR,
     LLM_API_KEY,
@@ -125,6 +125,34 @@ def md_to_text(text: str) -> str:
     t = re.sub(r"[ \t]+", " ", t)
     t = re.sub(r"\n{3,}", "\n\n", t)
     return t.strip()
+
+
+# 待确认写操作下，用户答复的确认/取消判定。
+_CONFIRM_EXACT = {
+    "确认", "确定", "是", "好", "行", "可以", "执行", "ok", "yes", "y",
+    "对", "好的", "嗯", "嗯嗯", "要", "要的",
+}
+_CANCEL_EXACT = {
+    "取消", "否", "不", "算了", "不要", "不用", "no", "cancel", "n",
+    "不要了", "不用了",
+}
+
+
+def _pending_decision(text: str) -> str | None:
+    """判断用户在待确认状态下给出的答复：返回 'confirm'/'cancel'/None。
+
+    只有明确匹配确认或取消时才作数，避免把普通问题误判成确认。
+    """
+    t = (text or "").strip().lower()
+    if t in _CONFIRM_EXACT:
+        return "confirm"
+    if t in _CANCEL_EXACT:
+        return "cancel"
+    if any(word in t for word in ("确认", "确定", "执行")):
+        return "confirm"
+    if any(word in t for word in ("取消", "算了")):
+        return "cancel"
+    return None
 
 
 # 校园多智能体主类：组装工具、子 Agent 和中间件，处理对话与任务分派。
@@ -269,8 +297,36 @@ class CampusAgent:
                 tool_calls=0,
             )
 
+        # 处理上一条待确认的写操作：确认/取消走快捷通道，其余视为放弃。
+        pending_key = next(
+            (key for key in _pending_actions if key.startswith(f"{session_id}:")),
+            None,
+        )
+        if pending_key is not None:
+            decision = _pending_decision(message)
+            if decision is not None:
+                action = _pending_actions.pop(pending_key)
+                reply = action["execute"]() if decision == "confirm" else "已取消。"
+                self._append_history(session_id, "user", message)
+                self._append_history(session_id, "assistant", reply)
+                history.append({"role": "user", "content": message})
+                history.append({"role": "assistant", "content": reply})
+                return self._response(
+                    reply,
+                    history=history,
+                    session_id=session_id,
+                    tool_calls=0,
+                )
+            # 用户发了别的内容：放弃待确认操作，继续正常对话。
+            _pending_actions.pop(pending_key, None)
+
         self._append_history(session_id, "user", message)
-        reply, tool_calls = self._invoke(message, history)
+        # 会话上下文只覆盖本次调用，结束后恢复，避免污染同线程后续直调工具。
+        token = _current_session.set(session_id)
+        try:
+            reply, tool_calls = self._invoke(message, history)
+        finally:
+            _current_session.reset(token)
         self._append_history(session_id, "assistant", reply)
 
         history.append({"role": "user", "content": message})

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import contextvars
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 
 from langchain_core.tools import tool
 
@@ -15,6 +16,46 @@ from .middleware import Middleware
 from .reminder_store import ReminderStore
 from .scraper import EventScraper
 from .time_parser import parse_time_range
+
+
+# 写操作确认层：Chat 入口调用前设置当前会话，工具闭包据此判断是否需要确认。
+_current_session: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "campus_agent_session", default=""
+)
+# 待确认操作：key 为 "session_id:action_key"，value 存 {description, execute}。
+_pending_actions: dict[str, dict] = {}
+
+
+def _confirmable(
+    action_key: str,
+    execute_fn: Callable[[], str],
+    description: str,
+) -> str:
+    """给写操作工具加确认：首次调用只记录待确认，用户确认后重入直接执行。
+
+    action_key 唯一标识某次操作，description 是展示给用户的确认文案。
+    """
+    session_id = _current_session.get()
+    if not session_id:
+        # 无会话上下文（如测试直调）时不阻塞，直接执行。
+        return execute_fn()
+
+    full_key = f"{session_id}:{action_key}"
+    for key in _pending_actions:
+        if key.startswith(f"{session_id}:"):
+            if key == full_key:
+                # 确认后重入：执行并清理。
+                return _pending_actions.pop(full_key)["execute"]()
+            return (
+                "【已有待确认操作】请先确认或取消上一操作："
+                f"{_pending_actions[key]['description']}"
+            )
+
+    _pending_actions[full_key] = {
+        "description": description,
+        "execute": execute_fn,
+    }
+    return f"【待确认】{description}。回复「确认」执行，回复「取消」放弃。"
 
 
 def build_campus_tools(
@@ -95,37 +136,61 @@ def build_campus_tools(
                 event = matches[0]
         if event is None:
             return f"未找到活动：{event_name}"
-        reminder = reminders.create(
-            user=user or "default",
-            event_id=event.id,
-            event_name=event.name,
-            due_at=event.time,
-            note=note,
+
+        def execute() -> str:
+            reminder = reminders.create(
+                user=user or "default",
+                event_id=event.id,
+                event_name=event.name,
+                due_at=event.time,
+                note=note,
+            )
+            track("tool.create_reminder", f"event_name={event_name}")
+            return f"已创建提醒：{reminder.event_name}，时间 {reminder.due_at}。"
+
+        return _confirmable(
+            f"reminder:{event.id or event_name}",
+            execute,
+            f"创建提醒：{event.name}（时间：{event.time}）",
         )
-        track("tool.create_reminder", f"event_name={event_name}")
-        return f"已创建提醒：{reminder.event_name}，时间 {reminder.due_at}。"
 
     @tool("set_preferences")
     def set_preferences(tags: list[str], user: str = "default") -> str:
         """设置兴趣标签，任一标签命中新活动即触发推送。"""
         cleaned = [str(tag).strip() for tag in (tags or []) if str(tag).strip()]
-        prefs = matcher.set_preferences(cleaned, user=user or "default")
-        track("tool.set_preferences", ",".join(prefs.tags))
-        label = "、".join(prefs.tags) if prefs.tags else "未选择标签"
-        return f"偏好已更新：{label}"
+
+        def execute() -> str:
+            prefs = matcher.set_preferences(cleaned, user=user or "default")
+            track("tool.set_preferences", ",".join(prefs.tags))
+            label = "、".join(prefs.tags) if prefs.tags else "未选择标签"
+            return f"偏好已更新：{label}"
+
+        label = "、".join(cleaned) if cleaned else "未选择标签"
+        return _confirmable(
+            f"prefs:{','.join(cleaned)}",
+            execute,
+            f"设置偏好为：{label}",
+        )
 
     @tool("refresh_events")
     def refresh_events(source: str = "manual") -> str:
         """抓取校园活动源，新增活动并把无法解析的记录放入待审核。"""
-        result = scraper.run()
-        track("tool.refresh_events", source)
-        summary = (
-            f"抓取完成：读取 {result.fetched} 条，新增 {result.added} 条，"
-            f"跳过 {result.skipped} 条，待人工确认 {result.pending} 条。"
+        def execute() -> str:
+            result = scraper.run()
+            track("tool.refresh_events", source)
+            summary = (
+                f"抓取完成：读取 {result.fetched} 条，新增 {result.added} 条，"
+                f"跳过 {result.skipped} 条，待人工确认 {result.pending} 条。"
+            )
+            if result.errors:
+                summary += " 错误：" + "；".join(result.errors)
+            return summary
+
+        return _confirmable(
+            "refresh",
+            execute,
+            "抓取校园活动更新",
         )
-        if result.errors:
-            summary += " 错误：" + "；".join(result.errors)
-        return summary
 
     @tool("list_pending_reviews")
     def list_pending_reviews() -> str:
@@ -147,11 +212,20 @@ def build_campus_tools(
     def review_pending(id: str, approved: bool = True) -> str:
         """批准或拒绝某条待人工审核的抓取记录。"""
         ok = str(approved).strip().lower() not in {"0", "false", "no", "否"}
-        item = scraper.review(id, ok)
-        track("tool.review_pending", f"id={id}, approved={ok}")
-        if item is None:
-            return f"未找到待审核记录：{id}"
-        return f"审核完成：{id} 状态 {item.get('status')}"
+
+        def execute() -> str:
+            item = scraper.review(id, ok)
+            track("tool.review_pending", f"id={id}, approved={ok}")
+            if item is None:
+                return f"未找到待审核记录：{id}"
+            return f"审核完成：{id} 状态 {item.get('status')}"
+
+        action = "通过" if ok else "拒绝"
+        return _confirmable(
+            f"review:{id}",
+            execute,
+            f"{action}待审核记录 {id}",
+        )
 
     @tool("get_stats")
     def get_stats() -> str:
@@ -181,23 +255,30 @@ def build_campus_tools(
         用于把用户知道但库里缺失的活动补充进来。活动 ID 自动生成；
         可选 duration 支持 “90 分钟”“1.5 小时”“2小时30分钟” 等写法。
         """
-        ok, result = store.create_event(
-            {
-                "name": name,
-                "time": time,
-                "location": location,
-                "category": category or "其他",
-                "description": description,
-                "tags": tags,
-                "duration": duration,
-                "contact": contact,
-                "source": "Agent 手动录入",
-            }
+        payload = {
+            "name": name,
+            "time": time,
+            "location": location,
+            "category": category or "其他",
+            "description": description,
+            "tags": tags,
+            "duration": duration,
+            "contact": contact,
+            "source": "Agent 手动录入",
+        }
+
+        def execute() -> str:
+            ok, result = store.create_event(dict(payload))
+            track("tool.add_event", f"name={name}")
+            if not ok:
+                return f"新增失败：{result}"
+            return f"已新增活动：{result.name}（ID {result.id}，时间 {result.time}）"
+
+        return _confirmable(
+            f"add:{name}",
+            execute,
+            f"新增活动：{name}（时间：{time}，地点：{location}）",
         )
-        track("tool.add_event", f"name={name}")
-        if not ok:
-            return f"新增失败：{result}"
-        return f"已新增活动：{result.name}（ID {result.id}，时间 {result.time}）"
 
     @tool("update_event")
     def update_event(id: str, fields: dict[str, Any]) -> str:
@@ -207,11 +288,23 @@ def build_campus_tools(
         {"time": "2026-09-20T14:00:00", "location": "教五楼"} 或
         {"duration": "90 分钟"}。
         """
-        ok, message = store.update_event(id, fields)
-        track("tool.update_event", f"id={id}")
-        if not ok:
-            return f"更新失败：{message}"
-        return f"已更新活动 {id}"
+        field_summary = (
+            "、".join(f"{key}={value}" for key, value in (fields or {}).items())
+            or "（无字段）"
+        )
+
+        def execute() -> str:
+            ok, message = store.update_event(id, fields)
+            track("tool.update_event", f"id={id}")
+            if not ok:
+                return f"更新失败：{message}"
+            return f"已更新活动 {id}"
+
+        return _confirmable(
+            f"update:{id}",
+            execute,
+            f"修改活动 {id}：{field_summary}",
+        )
 
     return [
         search_events,

@@ -94,9 +94,10 @@ class ReminderStore:
             return due
 
     # 按到期时间排序返回全部提醒，顺带清理过期终态提醒。
-    def all(self) -> list[Reminder]:
+    # now 参数供确定性测试传入基准时间，缺省使用当前时间。
+    def all(self, now: datetime | None = None) -> list[Reminder]:
         with self._lock:
-            self.prune()
+            self.prune(now)
             return sorted(self.reminders, key=lambda item: item.due_at)
 
     # 用户手动完成提醒后物理删除，视为已处理不再保留。

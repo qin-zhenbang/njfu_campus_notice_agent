@@ -8,6 +8,12 @@ const state = {
 let eventsCache = {};
 // 当前正在编辑的活动 ID；null 表示新增模式。
 let editingEventId = null;
+// 视图与日历状态：calendar/list 切换、当前显示月份、选中日期和最近一次加载结果。
+let viewMode = "calendar";
+let calendarCursor = new Date();
+calendarCursor.setDate(1);
+let selectedDate = toDateKey(new Date());
+let currentEvents = [];
 
 // 查询 DOM 的简写。
 const $ = (selector) => document.querySelector(selector);
@@ -32,6 +38,15 @@ function formatTime(value) {
   if (Number.isNaN(date.getTime())) return value;
   const pad = (n) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// 把任意日期值转成本地 YYYY-MM-DD；无法解析时返回 null。
+function toDateKey(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 // 转义 HTML，防止活动名称等文本被当作标签执行。
@@ -129,7 +144,13 @@ async function loadEvents() {
     params.set("to", `${from}T23:59:59`);
   }
   const data = await api(`/api/events?${params.toString()}`);
-  renderEvents(data.events);
+  currentEvents = data.events;
+  // 指定了具体日期时，日历跳转到对应月份并选中该日期。
+  if (from) {
+    calendarCursor = new Date(`${from}T00:00:00`);
+    selectedDate = from;
+  }
+  renderCurrentView();
 }
 
 // 渲染统一活动列表，空结果时显示占位提示。
@@ -157,6 +178,181 @@ function renderEvents(events) {
     `;
     body.appendChild(tr);
   }
+}
+
+// 按当前视图渲染活动区域：日历网格或原有表格。
+function renderCurrentView() {
+  $("#result-count").textContent = `${currentEvents.length} 条结果`;
+  const calendar = $("#calendar-view");
+  const list = $("#list-view");
+  if (viewMode === "calendar") {
+    calendar.classList.remove("hidden");
+    list.classList.add("hidden");
+    renderCalendar();
+  } else {
+    list.classList.remove("hidden");
+    calendar.classList.add("hidden");
+    renderEvents(currentEvents);
+  }
+}
+
+// 渲染月视图网格，并按选中日期刷新下方当天活动与待定时间区。
+function renderCalendar() {
+  const year = calendarCursor.getFullYear();
+  const month = calendarCursor.getMonth();
+  $("#calendar-title").textContent = `${year} 年 ${month + 1} 月`;
+
+  const byDay = {};
+  const pending = [];
+  for (const event of currentEvents) {
+    const key = toDateKey(event.standard_time);
+    if (key) {
+      (byDay[key] = byDay[key] || []).push(event);
+    } else {
+      pending.push(event);
+    }
+  }
+
+  const first = new Date(year, month, 1);
+  const offset = (first.getDay() + 6) % 7; // 周一开始
+  const todayKey = toDateKey(new Date());
+  const grid = $("#calendar-grid");
+  grid.innerHTML = "";
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(year, month, 1 - offset + i);
+    const key = toDateKey(date);
+    const events = byDay[key] || [];
+    const cell = document.createElement("div");
+    cell.className = "cal-cell";
+    cell.dataset.date = key;
+    if (date.getMonth() !== month) cell.classList.add("other-month");
+    if (key === todayKey) cell.classList.add("today");
+    if (key === selectedDate) cell.classList.add("selected");
+
+    const num = document.createElement("div");
+    num.className = "cal-day-num";
+    num.textContent = String(date.getDate());
+    if (key === todayKey) num.classList.add("today");
+    cell.appendChild(num);
+
+    const chips = document.createElement("div");
+    chips.className = "cal-events";
+    for (const event of events.slice(0, 3)) {
+      const chip = document.createElement("span");
+      chip.className = "cal-event";
+      chip.textContent = event.name;
+      chip.title = `${event.name} ${formatTime(event.standard_time)}`;
+      chips.appendChild(chip);
+    }
+    if (events.length > 3) {
+      const more = document.createElement("span");
+      more.className = "cal-event more";
+      more.textContent = `+${events.length - 3}`;
+      chips.appendChild(more);
+    }
+    cell.appendChild(chips);
+    grid.appendChild(cell);
+  }
+
+  renderDayEvents(byDay);
+  renderPendingTime(pending);
+}
+
+// 在日历下方列出选中当天的活动。
+function renderDayEvents(byDay) {
+  const container = $("#day-events");
+  const events = (byDay[selectedDate] || []).slice();
+  events.sort((a, b) => String(a.standard_time).localeCompare(String(b.standard_time)));
+  container.innerHTML = "";
+  if (!events.length) {
+    container.classList.add("hidden");
+    return;
+  }
+  container.classList.remove("hidden");
+  const title = document.createElement("h3");
+  title.className = "day-title";
+  title.textContent = `${selectedDate} 当天活动（${events.length} 场）`;
+  container.appendChild(title);
+  for (const event of events) {
+    container.appendChild(renderEventCard(event));
+  }
+}
+
+// 在日历下方列出暂无具体时间的活动。
+function renderPendingTime(pending) {
+  const container = $("#pending-time");
+  container.innerHTML = "";
+  if (!pending.length) {
+    container.classList.add("hidden");
+    return;
+  }
+  container.classList.remove("hidden");
+  const title = document.createElement("h3");
+  title.className = "day-title";
+  title.textContent = `待定时间（${pending.length} 场）`;
+  container.appendChild(title);
+  for (const event of pending) {
+    container.appendChild(renderEventCard(event, true));
+  }
+}
+
+// 生成活动卡片：含时间、地点、类别和编辑/删除操作。
+function renderEventCard(event, isPending = false) {
+  const card = document.createElement("div");
+  card.className = "list-item";
+  const timeText = isPending ? (event.raw_time || "时间待定") : formatTime(event.standard_time);
+  const timeLabel = isPending ? "原始时间" : "时间";
+  card.innerHTML = `
+    <strong>${escapeHtml(event.name)}</strong>
+    <p>${timeLabel}：${escapeHtml(timeText)}；地点：${escapeHtml(event.location || "-")}；类别：${escapeHtml(event.category || "-")}</p>
+    <div class="item-actions">
+      <button data-action="edit-event" data-id="${escapeHtml(event.id)}" type="button">编辑</button>
+      <button data-action="delete-event" data-id="${escapeHtml(event.id)}" type="button" class="danger">删除</button>
+    </div>
+  `;
+  return card;
+}
+
+// 初始化「日历 / 列表」视图切换。
+function setupViewToggle() {
+  $("#view-calendar-btn").addEventListener("click", () => {
+    viewMode = "calendar";
+    $("#view-calendar-btn").classList.add("active");
+    $("#view-list-btn").classList.remove("active");
+    renderCurrentView();
+  });
+  $("#view-list-btn").addEventListener("click", () => {
+    viewMode = "list";
+    $("#view-list-btn").classList.add("active");
+    $("#view-calendar-btn").classList.remove("active");
+    renderCurrentView();
+  });
+}
+
+// 初始化日历月份导航与日期选择。
+function setupCalendar() {
+  $("#cal-prev").addEventListener("click", () => {
+    calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+    renderCalendar();
+  });
+  $("#cal-next").addEventListener("click", () => {
+    calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+    renderCalendar();
+  });
+  $("#cal-today").addEventListener("click", () => {
+    calendarCursor = new Date();
+    calendarCursor.setDate(1);
+    selectedDate = toDateKey(new Date());
+    renderCalendar();
+  });
+  $("#calendar-grid").addEventListener("click", (event) => {
+    const cell = event.target.closest(".cal-cell");
+    if (!cell) return;
+    const key = cell.dataset.date;
+    if (!key) return;
+    selectedDate = key;
+    renderCalendar();
+  });
 }
 
 // 把分钟数转成弹窗回填用的可读时长文本。
@@ -375,24 +571,6 @@ async function sendChat(message) {
   }
 }
 
-// 手动触发一次抓取更新。
-async function fetchEvents() {
-  const button = $("#fetch-button");
-  button.disabled = true;
-  button.textContent = "抓取中";
-  try {
-    const data = await api("/api/fetch", { method: "POST", body: "{}" });
-    const pushedText = data.pushed.length ? `，兴趣推送 ${data.pushed.length} 条` : "";
-    addMessage("assistant", `抓取完成：读取 ${data.result.fetched} 条，新增 ${data.result.added} 条，待人工确认 ${data.result.pending} 条${pushedText}。`);
-    await Promise.all([loadEvents(), renderPending(), renderNotifications(), loadStats()]);
-  } catch (error) {
-    addMessage("assistant", `抓取失败：${error.message}`);
-  } finally {
-    button.disabled = false;
-    button.textContent = "抓取更新";
-  }
-}
-
 // 初始化 Agent/偏好/提醒/待审核四个页签的切换。
 function setupTabs() {
   document.querySelectorAll(".tab").forEach((button) => {
@@ -412,9 +590,13 @@ function setupActions() {
     $("#search-input").value = "";
     $("#category-select").value = "";
     $("#from-input").value = "";
+    calendarCursor = new Date();
+    calendarCursor.setDate(1);
+    selectedDate = toDateKey(new Date());
     loadEvents();
   });
-  $("#fetch-button").addEventListener("click", fetchEvents);
+  setupViewToggle();
+  setupCalendar();
   $("#save-preferences").addEventListener("click", savePreferences);
   $("#add-event-button").addEventListener("click", () => openEventModal());
   $("#event-form").addEventListener("submit", saveEvent);

@@ -123,7 +123,7 @@ class ReminderStoreTests(unittest.TestCase):
         self.store.check_due(now)
 
         self.assertEqual(self.store.prune(now), 0)
-        self.assertEqual(len(self.store.all()), 1)
+        self.assertEqual(len(self.store.all(now)), 1)
 
     def test_prune_removes_stale_notified(self):
         now = datetime(2026, 8, 3, 12, 0, 0)

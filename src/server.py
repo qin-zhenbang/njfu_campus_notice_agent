@@ -144,12 +144,6 @@ class AgentHandler(BaseHTTPRequestHandler):
             result = self.app.agent.chat(message, session_id=session_id, history=history)
             self._send_json(result)
             return
-        if path == "/api/fetch":
-            scrape_result = self.app.scraper.run()
-            added = self.app.store.events[-scrape_result.added:] if scrape_result.added else []
-            pushed = self.app.interest_agent.evaluate_new_events(added, source="fetch")
-            self._send_json({"result": scrape_result.to_dict(), "pushed": pushed})
-            return
         if path == "/api/preferences":
             tags = [str(tag) for tag in body.get("tags", [])]
             prefs = self.app.matcher.set_preferences(tags)
